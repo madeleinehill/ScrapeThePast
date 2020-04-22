@@ -6,8 +6,9 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
   CREATE_DOCUMENTS,
-  DELETE_ITEM,
+  DELETE_DOCUMENT,
   TOGGLE_EXCLUDED_DOCUMENT,
+  SET_DOCUMENT_YEAR,
 } from "../modules/actions";
 
 const useStyles = createUseStyles({
@@ -24,6 +25,26 @@ const useStyles = createUseStyles({
     margin: "10px 15px",
     borderTop: "solid 1px #F5F5F5",
     borderBottom: "solid 1px #F5F5F5",
+  },
+  expandedView: {
+    position: "relative",
+    backgroundColor: "#EEE",
+    overflow: "hidden",
+  },
+  deleteButton: {
+    backgroundColor: "#C83047",
+    color: "#FFF",
+    fontSize: "14px",
+    cursor: "pointer",
+    borderRadius: "0",
+    "&:hover": {
+      backgroundColor: "#A82037",
+    },
+  },
+  option: {
+    display: "flex",
+    justifyContent: "space-between",
+    marginBottom: "10px",
   },
   documentRow: {
     position: "relative",
@@ -46,7 +67,7 @@ const useStyles = createUseStyles({
       color: "#FFF",
       visibility: "hidden",
       position: "absolute",
-      top: "-20px",
+      top: "-25px",
       right: "-25px",
       width: "80px",
       height: "20px",
@@ -54,18 +75,6 @@ const useStyles = createUseStyles({
       zIndex: "10",
       borderRadius: "5px",
       textAlign: "center",
-
-      "&:before": {
-        content: " ",
-        display: "block",
-        position: "absolute",
-        top: "100%",
-        left: "50%",
-        marginLeft: "-5px",
-        borderWidth: "5px",
-        borderStyle: "solid",
-        borderColor: "black transparent black transparent",
-      },
     },
     "& p": {
       margin: "5px 0",
@@ -77,6 +86,7 @@ const useStyles = createUseStyles({
       width: "24px",
       height: "24px",
       padding: "0",
+      outline: "none",
 
       "&:hover": {
         backgroundColor: "#3047C8",
@@ -93,6 +103,7 @@ const DataView = (props) => {
   const { documents } = props;
   const classes = useStyles();
   const [expanded, setExpanded] = useState("");
+  const [showFull, setShowFull] = useState(false);
 
   return (
     <div className={classes.dataViewContainer}>
@@ -104,7 +115,10 @@ const DataView = (props) => {
       </div>
       <div className={classes.documentTable}>
         {Object.keys(documents).map((key, i) => (
-          <div key={i}>
+          <div
+            key={i}
+            style={{ border: expanded === key ? "solid 1px #888" : "none" }}
+          >
             <div className={classes.documentRow}>
               <div
                 style={{
@@ -112,6 +126,7 @@ const DataView = (props) => {
                   flexWrap: "nowrap",
                   alignItems: "center",
                   height: "20px",
+                  maxWidth: "95%",
                 }}
               >
                 <input
@@ -119,7 +134,15 @@ const DataView = (props) => {
                   checked={!documents[key].excluded}
                   onChange={() => props.toggleExclusion(key)}
                 />
-                <p>{documents[key].name}</p>
+                <p
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {documents[key].name}
+                </p>
               </div>
               {documents[key].loading ? (
                 <div style={{ maxWidth: "20px" }}>
@@ -139,18 +162,60 @@ const DataView = (props) => {
                   <span className={"hide"}>more info</span>
                 </button>
               )}
-              {/* <p>Loading: {String(documents[key].loading)}</p> */}
             </div>
             <div
+              className={classes.expandedView}
               style={{
-                backgroundColor: "#EEE",
                 height: expanded === key ? "auto" : "0",
-                overflow: "hidden",
+                padding: expanded === key ? "10px" : "0",
               }}
             >
-              <p>Confidence: {documents[key].confidence}</p>
-              <p>Full text: </p>
-              <p>{documents[key].text}</p>
+              <div className={classes.option}>
+                <span style={{ fontWeight: "bold" }}>Year:</span>{" "}
+                <input
+                  id="filled-number"
+                  size="small"
+                  type="number"
+                  value={documents[key].year}
+                  placeholder="none"
+                  onChange={(e) => props.setDocumentYear(key, e.target.value)}
+                />
+              </div>
+              <div className={classes.option}>
+                <span style={{ fontWeight: "bold" }}>Confidence:</span>{" "}
+                <span>{documents[key].confidence}%</span>
+              </div>
+              <div
+                className={classes.option}
+                style={{
+                  marginBottom: "0",
+                }}
+              >
+                <span style={{ fontWeight: "bold" }}>Text: </span>{" "}
+                <button onClick={() => setShowFull(!showFull)}>
+                  {showFull ? "hide" : "show"} full text
+                </button>
+              </div>
+              <p
+                style={{
+                  marginTop: "5px",
+                  padding: "5px",
+                  backgroundColor: "#FFF",
+                  height: showFull ? "auto" : "35px",
+                  overflow: "hidden",
+                  transition: "height 0.2s",
+                }}
+              >
+                {documents[key].text}
+              </p>
+              <p>
+                <button
+                  className={classes.deleteButton}
+                  onClick={() => props.removeItemFromStore(key)}
+                >
+                  Delete Document
+                </button>
+              </p>
             </div>{" "}
           </div>
         ))}
@@ -167,7 +232,9 @@ const mapDispatchToProps = (dispatch) => ({
   addItemToStore: (p) => dispatch({ type: CREATE_DOCUMENTS, payload: p }),
   toggleExclusion: (url) =>
     dispatch({ type: TOGGLE_EXCLUDED_DOCUMENT, payload: url }),
-  removeItemFromStore: (p) => dispatch({ type: DELETE_ITEM, payload: p }),
+  removeItemFromStore: (p) => dispatch({ type: DELETE_DOCUMENT, payload: p }),
+  setDocumentYear: (key, year) =>
+    dispatch({ type: SET_DOCUMENT_YEAR, payload: { key: key, year: year } }),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataView);

@@ -1,6 +1,6 @@
 import re
 import json
-import math 
+import math
 
 rules = []
 # get rules from a separate text file
@@ -23,16 +23,17 @@ for ci in cities:
         continue
 
     geoData[ci[0]] = {"name":         ci[2],
-                        "type":          "city",
-                        "latitude":     ci[4],
-                        "longitude":    ci[5],
-                        "country_code": ci[8],
-                        "admin_code":   ci[10],
-                        "population":   ci[14]}
+                      "type":          "city",
+                      "latitude":     ci[4],
+                      "longitude":    ci[5],
+                      "country_code": ci[8],
+                      "admin_code":   ci[10],
+                      "population":   ci[14]}
 
     # filter out non alphabetical characters other than spaces
-    name = "".join([x for x in ci[2].lower() if x.isalpha() or x == " "]).strip()
-    
+    name = "".join(
+        [x for x in ci[2].lower() if x.isalpha() or x == " "]).strip()
+
     if name not in geoNames or int(geoData[geoNames[name]]["population"]) < int(ci[14]):
         geoNames[name] = ci[0]
 
@@ -40,10 +41,10 @@ for ci in cities:
 with open("./geoname_data/alt.txt") as file:
     # split the file by line into a list of strings
     lines = file.read().split('\n')
-    
+
     for li in lines:
-        attrs = re.split('\t',li)
-            
+        attrs = re.split('\t', li)
+
         # ignore empty lines
         if len(attrs) == 1:
             continue
@@ -56,8 +57,9 @@ with open("./geoname_data/alt.txt") as file:
         if attrs[1] in geoData.keys():
 
             # filter out non alphabetical characters other than spaces]
-            name = "".join([x for x in attrs[3].lower() if x.isalpha() or x == " "]).strip()
-            
+            name = "".join([x for x in attrs[3].lower()
+                            if x.isalpha() or x == " "]).strip()
+
             if name not in geoNames or int(geoData[geoNames[name]]["population"]) < int(geoData[attrs[1]]["population"]):
                 geoNames[name] = attrs[1]
 
@@ -65,26 +67,27 @@ with open("./geoname_data/alt.txt") as file:
 with open("./geoname_data/states.txt") as file:
     # split the file by line into a list of strings
     lines = file.read().split('\n')
-    
-    for li in lines:
-        attrs = re.split('\t',li)
-            
-        if len(attrs) < 3: 
-            print(attrs)
-            continue
 
-        name = "".join([x for x in attrs[0].lower() if x.isalpha() or x == " "]).strip()
+for li in lines:
+    attrs = re.split('\t', li)
 
-        geoData[name] = {"name":        attrs[0],
-                        "type":          "state",
-                        "latitude":     attrs[1],
-                        "longitude":    attrs[2],
-                        "country_code":     "US",
-                        "admin_code":       "",
-                        "population":       ""}
-        
-        # a state's proper name overrides cities
-        geoNames[name] = name
+    if len(attrs) < 3:
+        print(attrs)
+        continue
+
+    name = "".join([x for x in attrs[0].lower()
+                    if x.isalpha() or x == " "]).strip()
+
+    geoData[name] = {"name":        attrs[0],
+                     "type":          "state",
+                     "latitude":     attrs[1],
+                     "longitude":    attrs[2],
+                     "country_code":     "US",
+                     "admin_code":       "",
+                     "population":       ""}
+
+    # a state's proper name overrides cities
+    geoNames[name] = name
 
 # record all multi-word names into a prefix dictionary, keyed by the first word
 prefixes = {}
@@ -104,9 +107,11 @@ with open("./geoname_data/blacklist.txt") as file:
     for w in words:
         if w in geoNames:
             del geoNames[w]
+        if len(w.split(" ")) > 1:
+            prefixes[w.split(" ")[0]].remove(w)
 
 
-# implement manual overrides i.e. ("york", "new york geo") associates 
+# implement manual overrides i.e. ("york", "new york geo") associates
     # york to the same entity as new york geo (NYC)
 overrides = {
     ("york", "new york")
@@ -114,13 +119,14 @@ overrides = {
 for o in overrides:
     geoNames[o[0]] = geoNames[o[1]]
 
-# check that it's getting the highest population and cleaning strings 
+# check that it's getting the highest population and cleaning strings
 assert geoData[geoNames["washington dc"]]["latitude"] == "38.89511"
 assert geoData[geoNames["phoenix"]]["latitude"] == "33.44838"
 assert geoData[geoNames["arizona"]]["type"] == "state"
 
 print(f'Identified {len(geoData)} unique cities by name')
-print(f'Ignored {len(cities) - len(set(geoNames.values()))} cities entirely from data')
+print(
+    f'Ignored {len(cities) - len(set(geoNames.values()))} cities entirely from data')
 
 # write to new file
 with open("./src/utils/geonames.json", 'w+') as outfile:
@@ -128,6 +134,6 @@ with open("./src/utils/geonames.json", 'w+') as outfile:
 
 with open("./src/utils/geo_data.json", 'w+') as outfile:
     json.dump(geoData, outfile)
-    
+
 with open("./src/utils/prefixes.json", 'w+') as outfile:
     json.dump(prefixes, outfile)

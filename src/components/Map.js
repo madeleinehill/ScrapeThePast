@@ -5,6 +5,7 @@ import { connect } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CustomPopup from "./CustomPopup";
+import { getFilteredMentions } from "../modules/selectors";
 
 import { createUseStyles } from "react-jss";
 import geonames from "../utils/geonames";
@@ -43,7 +44,6 @@ const MapWrapper = (props) => {
     { uuid: "1", coord: [44, -90] },
     { uuid: "2", coord: [45, -90] },
   ];
-
   return (
     <>
       <Map className={classes.map} center={[35, -100]} zoom={5}>
@@ -63,14 +63,12 @@ const MapWrapper = (props) => {
         {/*</Marker>
         )) */}}
         {Object.keys(props.mentions).map((obs, i) => {
-          if (!props.mentions[obs].count) {
-            return undefined;
-          }
           return (
             <Circle
-              key={geoData[obs]["name"]}
+              key={obs}
               center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
               radius={10000 * Math.sqrt(props.mentions[obs].count)}
+              color={geoData[obs].type === "state" ? "#F57" : "#57F"}
             >
               <Popup>
                 <CustomPopup
@@ -93,7 +91,7 @@ const MapWrapper = (props) => {
 
 const mapStateToProps = (state) => ({
   documents: state.documents,
-  mentions: state.mentions,
+  mentions: getFilteredMentions(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({});

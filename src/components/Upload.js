@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { CREATE_DOCUMENTS } from "../modules/actions";
-import langcodes from "../utils/langcodes";
-import { Button, TextField, Select } from "@material-ui/core";
+// import langcodes from "../utils/langcodes";
 import { CloudUpload, Close, Description } from "@material-ui/icons";
 import { createUseStyles } from "react-jss";
+import sample from "../utils/sample.json";
 
 const useStyles = createUseStyles({
   dropzoneContainer: {
     display: "flex",
     justifyContent: "center",
     margin: "8px",
-    "& :hover": {
+    "& label:hover": {
       cursor: "pointer",
       backgroundColor: "#ccc",
     },
@@ -69,6 +69,8 @@ const useStyles = createUseStyles({
     position: "relative",
     display: "inline-block",
     margin: "10px",
+    width: "70px",
+    height: "88px",
     "& button": {
       backgroundColor: "#000",
       color: "#FFF",
@@ -87,10 +89,24 @@ const useStyles = createUseStyles({
         borderRadius: "10px",
       },
     },
-    "& div": {
-      maxWidth: "70px",
-      maxHeight: "70px",
+    "& .imgcont": {
+      hidth: "70px",
+      height: "70px",
       overflow: "hidden",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    "& .textcont": {
+      maxWidth: "70px",
+      display: "flex",
+      justifyContent: "center",
+      "& > span": {
+        fontSize: "10px",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      },
     },
   },
   imageDisplay: {
@@ -106,7 +122,17 @@ const Upload = (props) => {
   const classes = useStyles();
 
   const [uploads, setUploads] = useState([]);
+  const [year, setYear] = useState("");
   const [lang, setLang] = useState("eng");
+
+  const loadSample = () => {
+    setUploads(
+      sample.map((file) => ({
+        url: file.url,
+        file: new File([file.text], file.url, { type: "text/plain" }),
+      })),
+    );
+  };
 
   const handleChange = (files) => {
     let uploadedFiles = files.map((file) => ({
@@ -121,7 +147,7 @@ const Upload = (props) => {
       <h2>Upload</h2>
       <div className={classes.dropzoneContainer}>
         {uploads.length === 0 && (
-          <>
+          <div style={{ maxWidth: "130px" }}>
             <label htmlFor="fileUploader" className={classes.dropzone}>
               <p></p>
               <CloudUpload fontSize="large" />
@@ -134,19 +160,27 @@ const Upload = (props) => {
               onChange={(e) => handleChange(Array.from(e.target.files))}
               multiple
             />
-          </>
+            <br></br>
+            <span>OR </span>
+            <button onClick={loadSample}>load sample</button>
+          </div>
         )}
       </div>
+
       <div className={classes.imageDisplay}>
         {uploads.map((value, index) => {
           return (
             <div className={classes.imageContainer} key={`${index}`}>
-              <div>
+              <div className={"imgcont"}>
                 {value.file.type.indexOf("text") === 0 ? (
-                  <Description style={{ fontSize: "60px" }} />
+                  <Description style={{ fontSize: "50px" }} />
                 ) : (
-                  <img alt="upload preview" src={value.url} width="100px" />
+                  <img alt="upload preview" src={value.url} width="80px" />
                 )}
+              </div>
+
+              <div className={"textcont"}>
+                <span>{value.file.name}</span>
               </div>
               <button
                 onClick={() =>
@@ -163,7 +197,7 @@ const Upload = (props) => {
       <div className={classes.optionsContainer}>
         <div className={classes.options}>
           {/* <div className={classes.option}>
-            <p>Language</p>
+            <p>Language:</p>
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value)}
@@ -176,11 +210,17 @@ const Upload = (props) => {
                 </option>
               ))}
             </select>
-          </div>
+              </div> */}
           <div className={classes.option}>
-            <p>Year</p>
-            <input id="filled-number" size="small" type="number" />
-            </div> */}
+            <p>Year:</p>
+            <input
+              id="filled-number"
+              size="small"
+              type="number"
+              placeholder="1900"
+              onChange={(e) => setYear(e.target.value)}
+            />
+          </div>
           <div className={classes.justifyRight}>
             <button
               style={{
@@ -192,7 +232,11 @@ const Upload = (props) => {
               className={classes.button}
               disabled={!uploads.length}
               onClick={() => {
-                props.addDocumentsToStore({ uploads: uploads, lang: lang });
+                props.addDocumentsToStore({
+                  uploads: uploads,
+                  lang: lang,
+                  year: year,
+                });
                 setUploads([]);
               }}
             >

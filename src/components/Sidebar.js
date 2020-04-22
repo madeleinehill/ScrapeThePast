@@ -3,6 +3,8 @@ import SplitPane from "react-split-pane";
 import Pane from "react-split-pane/lib/Pane";
 import Upload from "./Upload";
 import DataView from "./DataView";
+import DatesIncluded from "./DatesIncluded";
+import Blacklist from "./Blacklist";
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
@@ -12,7 +14,7 @@ const useStyles = createUseStyles({
     position: "relative",
   },
   sidebar: {
-    overflowY: "auto !important",
+    overflowY: "scroll",
     height: "100vh",
     minWidth: "250px",
     "& h2": {
@@ -39,7 +41,6 @@ const useStyles = createUseStyles({
   },
   pane: {
     overflowY: "auto",
-    maxHeight: "60vh",
   },
 });
 
@@ -51,7 +52,6 @@ const Sidebar = (props) => {
         <Pane
           maxSize={"80px"}
           minSize={"80px"}
-          initialSize="80px"
           className={classes.centerContentVertical}
         >
           <img
@@ -59,29 +59,35 @@ const Sidebar = (props) => {
             src={process.env.PUBLIC_URL + "/logo.svg"}
           ></img>
         </Pane>
-        <Pane className={classes.pane} initialSize="200px" minSize={"80px"}>
+        <Pane className={classes.pane} initialSize="260px" minSize={"40px"}>
           <Upload />
         </Pane>
-        <Pane
-          className={classes.pane}
-          minSize={"80px"}
-          maxSize={"300px"}
-          initialSize="240px"
-        >
+        <Pane className={classes.pane} minSize={"40px"}>
           <DataView />
         </Pane>
-        <Pane minSize={"30px"} className={classes.centerContentVertical}>
+        <Pane className={classes.pane} minSize={"40px"} initialSize="40px">
+          <DatesIncluded />
+        </Pane>
+        <Pane className={classes.pane} minSize={"40px"} initialSize="40px">
+          <Blacklist />
+        </Pane>
+        <Pane
+          minSize={"30px"}
+          maxSize={"30px"}
+          initialSize="30px"
+          className={classes.centerContentVertical}
+        >
           <p
             style={{
               position: "absolute",
               bottom: "0",
               left: "0",
-              margin: "10px",
+              margin: "4px",
               fontSize: "10px",
             }}
           >
-            This website was created by Henry Hill for educational purposes. You
-            can find the source on Github{" "}
+            This website was created by Henry Hill. <br></br>You can find the
+            source on Github{" "}
             <a
               target="_blank"
               href="https://github.com/henryhill1999/ScrapeThePast"

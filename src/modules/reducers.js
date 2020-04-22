@@ -1,46 +1,57 @@
 import {
   ADD_DOCUMENT,
   UPDATE_DOCUMENT,
-  DELETE_ITEM,
+  DELETE_DOCUMENT,
   TOGGLE_EXCLUDED_DOCUMENT,
+  SET_FILTER_FUNCTION,
+  SET_DOCUMENT_YEAR,
+  ADD_TO_BLACKLIST,
+  DELETE_FROM_BLACKLIST,
 } from "./actions";
 import _ from "lodash";
 
 export const defaultState = {
   documents: {},
-  mentions: {},
-  blacklist: {
-    aid: true,
-    was: true,
-    eld: true,
-    liberal: true,
-    union: true,
-    "the bank": true,
-    "the d": true,
-    rome: true,
-    slaughter: true,
-  },
+  filterFunction: () => true,
+  blacklist: {},
 };
 
 const reducer = (state = defaultState, action) => {
   switch (action.type) {
+    case ADD_TO_BLACKLIST: {
+      let { literal } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.blacklist[literal] = true;
+
+      return newState;
+    }
+
+    case DELETE_FROM_BLACKLIST: {
+      let { literal } = action.payload;
+      let newState = _.cloneDeep(state);
+      delete newState.blacklist[literal];
+
+      return newState;
+    }
+
+    case SET_DOCUMENT_YEAR: {
+      let { key, year } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.documents[key].year = year;
+
+      return newState;
+    }
+    case SET_FILTER_FUNCTION: {
+      let newState = _.cloneDeep(state);
+      newState.filterFunction = action.payload;
+
+      return newState;
+    }
     case TOGGLE_EXCLUDED_DOCUMENT: {
       let itemUrl = action.payload;
       let newState = _.cloneDeep(state);
       newState.documents[itemUrl].excluded = !newState.documents[itemUrl]
         .excluded;
-
-      if (newState.documents[itemUrl].excluded) {
-        newState.mentions = subtractMentions(
-          newState.mentions,
-          newState.documents[itemUrl].geonames,
-        );
-      } else {
-        newState.mentions = addMentions(
-          newState.mentions,
-          newState.documents[itemUrl].geonames,
-        );
-      }
 
       return newState;
     }
@@ -49,10 +60,9 @@ const reducer = (state = defaultState, action) => {
       let newState = _.cloneDeep(state);
       newItem.degree = action.payload.text ? 1 : 0;
       newItem.excluded = false;
+      newItem.year = action.payload.year ? parseInt(action.payload.year) : "";
 
       newState.documents[newItem.path] = newItem;
-
-      newState.mentions = addMentions(newState.mentions, newItem.geonames);
 
       return newState;
     }
@@ -73,63 +83,18 @@ const reducer = (state = defaultState, action) => {
       newItem.loading = newData.loading;
       newItem.percentLoaded = newData.percentLoaded;
 
-      newState.mentions = addMentions(newState.mentions, newData.geonames);
-
       return newState;
     }
 
-    case DELETE_ITEM: {
+    case DELETE_DOCUMENT: {
       let newState = _.cloneDeep(state);
-      let index = _.findIndex(newState.documents, { id: action.payload });
-      newState.documents.splice(index, 1);
+      delete newState.documents[action.payload];
       return newState;
     }
 
     default:
       return state;
   }
-};
-
-const addMentions = (mentions, geonames) => {
-  geonames.forEach((n) => {
-    let { key, literal } = n;
-
-    // if this is the entity's first mention, add it with count zero
-    if (!mentions.hasOwnProperty(key)) {
-      mentions[key] = { count: 0, literals: {} };
-    }
-    // if this literal phrase hasn't been used before, add it
-    if (!mentions[key].literals.hasOwnProperty(literal)) {
-      mentions[key].literals[literal] = { count: 0 };
-    }
-
-    // increment the identity
-    mentions[key].count += 1;
-    // note what was literally said
-    mentions[key].literals[literal].count += 1;
-  });
-  return mentions;
-};
-
-const subtractMentions = (mentions, geonames) => {
-  geonames.forEach((n) => {
-    let { key, literal } = n;
-
-    // if this is the entity's first mention, add it with count zero
-    if (!mentions.hasOwnProperty(key)) {
-      mentions[key] = { count: 0, literals: {} };
-    }
-    // if this literal phrase hasn't been used before, add it
-    if (!mentions[key].literals.hasOwnProperty(literal)) {
-      mentions[key].literals[literal] = { count: 0 };
-    }
-
-    // increment the identity
-    mentions[key].count -= 1;
-    // note what was literally said
-    mentions[key].literals[literal].count -= 1;
-  });
-  return mentions;
 };
 
 export default reducer;

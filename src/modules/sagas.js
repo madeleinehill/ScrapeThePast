@@ -10,7 +10,7 @@ import prefixes from "../utils/prefixes";
 
 var Tesseract = window.Tesseract;
 
-function geocodeText(text, blacklist) {
+function geocodeText(text) {
   // first take out punctuation and lower, get all the individual words
   let words = text
     .toLowerCase()
@@ -52,11 +52,7 @@ function geocodeText(text, blacklist) {
 
     // convert into its id
 
-    if (
-      match !== null &&
-      Object.keys(blacklist).find((x) => x.toLowerCase() === match) ===
-        undefined
-    ) {
+    if (match !== null) {
       matches.push({ key: geonames[match], literal: match });
     }
   }
@@ -137,12 +133,13 @@ function downloadFile(file, filename = "download") {
   }
 }
 
-function* runImage(u, lang) {
+function* runImage(u, lang, year) {
   const img = yield load_image(u.file);
   const verticalSliceHeight = 500;
 
   yield put({
     type: ADD_DOCUMENT,
+    year: year,
     payload: {
       name: u.file.name,
       path: u.url.substring(5, u.url.length),
@@ -168,8 +165,6 @@ function* runImage(u, lang) {
       lang: lang,
     });
 
-    let blacklist = yield select((state) => state.blacklist);
-
     yield put({
       type: UPDATE_DOCUMENT,
       payload: {
@@ -177,7 +172,7 @@ function* runImage(u, lang) {
         text: result.text,
         confidence: result.confidence,
         language: lang,
-        geonames: geocodeText(result.text, blacklist),
+        geonames: geocodeText(result.text),
         loading: j + verticalSliceHeight < img.height,
         percentLoaded: (j + verticalSliceHeight) / parseFloat(img.height),
       },
@@ -211,9 +206,19 @@ function* analyzeFiles(action) {
     const el = uploads[i];
     let type = el.file.type.substring(0, el.file.type.indexOf("/"));
 
-    let blacklist = yield select((state) => state.blacklist);
+    // if a year is not specified, see if it is in the filename
+    let year = action.payload.year;
+    if (
+      !year &&
+      el.file.name.length > 4 &&
+      el.file.name.substring(4, 5) === "_" &&
+      parseInt(el.file.name.substring(0, 4))
+    ) {
+      year = parseInt(el.file.name.substring(0, 4));
+    }
+
     if (type === "image") {
-      yield runImage(el, action.lang);
+      yield runImage(el, action.lang, year);
     } else if (type === "text") {
       const text = yield readText(el);
 
@@ -221,11 +226,12 @@ function* analyzeFiles(action) {
         type: ADD_DOCUMENT,
         payload: {
           name: el.file.name,
+          year: year,
           path: el.url.substring(5, el.url.length),
           text: text,
           confidence: 100,
           language: action.lang,
-          geonames: geocodeText(text, blacklist),
+          geonames: geocodeText(text),
           loading: false,
         },
       });
