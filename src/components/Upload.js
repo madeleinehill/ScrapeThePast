@@ -40,6 +40,14 @@ const useStyles = createUseStyles({
   },
   optionsContainer: {
     display: "flex",
+    justifyContent: "center",
+  },
+  options: {
+    width: "100%",
+    maxWidth: "300px",
+  },
+  option: {
+    display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     width: "100%",
@@ -145,47 +153,53 @@ const Upload = (props) => {
                   setUploads(uploads.filter((e, i) => i !== index))
                 }
               >
-                <Close style={{ fontSize: "15px" }} />
+                <Close style={{ fontSize: "17px" }} />
               </button>
             </div>
           );
         })}
       </div>
+
       <div className={classes.optionsContainer}>
-        <p>Language</p>
-        <select
-          value={lang}
-          onChange={(e) => setLang(e.target.value)}
-          id="langsel"
-          style={{ width: "137px !important" }}
-        >
-          {Object.keys(langcodes).map((key) => (
-            <option value={key} key={key}>
-              {langcodes[key]}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className={classes.optionsContainer}>
-        <p>Year</p>
-        <input id="filled-number" size="small" type="number" />
-      </div>
-      <div className={classes.justifyRight}>
-        <button
-          style={{
-            width: "137px !important",
-            backgroundColor: uploads.length ? undefined : "#999",
-            cursor: uploads.length ? undefined : "default",
-          }}
-          className={classes.button}
-          disabled={!uploads.length}
-          onClick={() => {
-            props.addDocumentsToStore({ uploads: uploads, lang: lang });
-            setUploads([]);
-          }}
-        >
-          Analyze Documents
-        </button>
+        <div className={classes.options}>
+          {/* <div className={classes.option}>
+            <p>Language</p>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value)}
+              id="langsel"
+              style={{ width: "137px !important" }}
+            >
+              {Object.keys(langcodes).map((key) => (
+                <option value={key} key={key}>
+                  {langcodes[key]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className={classes.option}>
+            <p>Year</p>
+            <input id="filled-number" size="small" type="number" />
+            </div> */}
+          <div className={classes.justifyRight}>
+            <button
+              style={{
+                width: "137px !important",
+                color: "#FFF",
+                backgroundColor: uploads.length ? undefined : "#aaa",
+                cursor: uploads.length ? undefined : "default",
+              }}
+              className={classes.button}
+              disabled={!uploads.length}
+              onClick={() => {
+                props.addDocumentsToStore({ uploads: uploads, lang: lang });
+                setUploads([]);
+              }}
+            >
+              Analyze Documents
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

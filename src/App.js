@@ -15,11 +15,18 @@ const useStyles = createUseStyles({
   "@global": {
     body: {
       margin: 0,
+      height: "100vh",
+      width: "100vw",
+      position: "fixed",
+      overflow: "hidden",
+      top: "0",
+      left: "0",
     },
   },
 
   SplitPaneDisplay: {
     height: "100vh",
+    width: "100vw",
     "& .Resizer": {
       background: "#000",
       opacity: "0.2",
@@ -71,7 +78,11 @@ function App() {
   const classes = useStyles();
   return (
     <Provider store={reduxStore}>
-      <SplitPane split="vertical" className={classes.SplitPaneDisplay}>
+      <SplitPane
+        split="vertical"
+        minSize={250}
+        className={classes.SplitPaneDisplay}
+      >
         <Pane initialSize="300px">
           <Sidebar />
         </Pane>

@@ -54,15 +54,18 @@ const MapWrapper = (props) => {
           minZoom={4}
           maxZoom={10}
         />
-        {mapObjects.map((obs) => (
+        {/* {mapObjects.map((obs) => (
           <Marker key={obs.uuid} position={obs.coord}>
             {/* <Popup>*/}
-            {/* <CustomPopup /> */}
-            {/* title={obs.name} description={obs.description} */}
-            {/* </Popup> */}
-          </Marker>
-        ))}
+        {/* <CustomPopup /> */}
+        {/* title={obs.name} description={obs.description} */}
+        {/* </Popup> */}
+        {/*</Marker>
+        )) */}}
         {Object.keys(props.mentions).map((obs, i) => {
+          if (!props.mentions[obs].count) {
+            return undefined;
+          }
           return (
             <Circle
               key={geoData[obs]["name"]}

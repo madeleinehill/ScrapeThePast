@@ -1,4 +1,9 @@
-import { ADD_DOCUMENT, UPDATE_DOCUMENT, DELETE_ITEM } from "./actions";
+import {
+  ADD_DOCUMENT,
+  UPDATE_DOCUMENT,
+  DELETE_ITEM,
+  TOGGLE_EXCLUDED_DOCUMENT,
+} from "./actions";
 import _ from "lodash";
 
 export const defaultState = {
@@ -19,32 +24,38 @@ export const defaultState = {
 
 const reducer = (state = defaultState, action) => {
   switch (action.type) {
+    case TOGGLE_EXCLUDED_DOCUMENT: {
+      let itemUrl = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.documents[itemUrl].excluded = !newState.documents[itemUrl]
+        .excluded;
+
+      if (newState.documents[itemUrl].excluded) {
+        newState.mentions = subtractMentions(
+          newState.mentions,
+          newState.documents[itemUrl].geonames,
+        );
+      } else {
+        newState.mentions = addMentions(
+          newState.mentions,
+          newState.documents[itemUrl].geonames,
+        );
+      }
+
+      return newState;
+    }
     case ADD_DOCUMENT: {
       let newItem = { ...action.payload };
       let newState = _.cloneDeep(state);
       newItem.degree = action.payload.text ? 1 : 0;
+      newItem.excluded = false;
+
       newState.documents[newItem.path] = newItem;
-      newItem.geonames.forEach((n) => {
-        let { key, literal } = n;
 
-        // if this is the entity's first mention, add it with count zero
-        if (!newState.mentions.hasOwnProperty(key)) {
-          newState.mentions[key] = { count: 0, literals: {} };
-        }
-        // if this literal phrase hasn't been used before, add it
-        if (!newState.mentions[key].literals.hasOwnProperty(literal)) {
-          newState.mentions[key].literals[literal] = { count: 0 };
-        }
-
-        // increment the identity
-        newState.mentions[key].count += 1;
-        // note what was literally said
-        newState.mentions[key].literals[literal].count += 1;
-      });
+      newState.mentions = addMentions(newState.mentions, newItem.geonames);
 
       return newState;
     }
-
     case UPDATE_DOCUMENT: {
       console.log(action);
 
@@ -60,23 +71,9 @@ const reducer = (state = defaultState, action) => {
       newItem.degree += 1;
       newItem.geonames += newData.geonames;
       newItem.loading = newData.loading;
-      newData.geonames.forEach((n) => {
-        let { key, literal } = n;
+      newItem.percentLoaded = newData.percentLoaded;
 
-        // if this is the entity's first mention, add it with count zero
-        if (!newState.mentions.hasOwnProperty(key)) {
-          newState.mentions[key] = { count: 0, literals: {} };
-        }
-        // if this literal phrase hasn't been used before, add it
-        if (!newState.mentions[key].literals.hasOwnProperty(literal)) {
-          newState.mentions[key].literals[literal] = { count: 0 };
-        }
-
-        // increment the identity
-        newState.mentions[key].count += 1;
-        // note what was literally said
-        newState.mentions[key].literals[literal].count += 1;
-      });
+      newState.mentions = addMentions(newState.mentions, newData.geonames);
 
       return newState;
     }
@@ -91,6 +88,48 @@ const reducer = (state = defaultState, action) => {
     default:
       return state;
   }
+};
+
+const addMentions = (mentions, geonames) => {
+  geonames.forEach((n) => {
+    let { key, literal } = n;
+
+    // if this is the entity's first mention, add it with count zero
+    if (!mentions.hasOwnProperty(key)) {
+      mentions[key] = { count: 0, literals: {} };
+    }
+    // if this literal phrase hasn't been used before, add it
+    if (!mentions[key].literals.hasOwnProperty(literal)) {
+      mentions[key].literals[literal] = { count: 0 };
+    }
+
+    // increment the identity
+    mentions[key].count += 1;
+    // note what was literally said
+    mentions[key].literals[literal].count += 1;
+  });
+  return mentions;
+};
+
+const subtractMentions = (mentions, geonames) => {
+  geonames.forEach((n) => {
+    let { key, literal } = n;
+
+    // if this is the entity's first mention, add it with count zero
+    if (!mentions.hasOwnProperty(key)) {
+      mentions[key] = { count: 0, literals: {} };
+    }
+    // if this literal phrase hasn't been used before, add it
+    if (!mentions[key].literals.hasOwnProperty(literal)) {
+      mentions[key].literals[literal] = { count: 0 };
+    }
+
+    // increment the identity
+    mentions[key].count -= 1;
+    // note what was literally said
+    mentions[key].literals[literal].count -= 1;
+  });
+  return mentions;
 };
 
 export default reducer;

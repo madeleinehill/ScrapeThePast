@@ -144,12 +144,14 @@ function* runImage(u, lang) {
   yield put({
     type: ADD_DOCUMENT,
     payload: {
+      name: u.file.name,
       path: u.url.substring(5, u.url.length),
       text: "",
       confidence: 0,
       language: lang,
       geonames: [],
       loading: true,
+      percentLoaded: 0,
     },
   });
 
@@ -177,6 +179,7 @@ function* runImage(u, lang) {
         language: lang,
         geonames: geocodeText(result.text, blacklist),
         loading: j + verticalSliceHeight < img.height,
+        percentLoaded: (j + verticalSliceHeight) / parseFloat(img.height),
       },
     });
   }
@@ -217,6 +220,7 @@ function* analyzeFiles(action) {
       yield put({
         type: ADD_DOCUMENT,
         payload: {
+          name: el.file.name,
           path: el.url.substring(5, el.url.length),
           text: text,
           confidence: 100,

@@ -12,6 +12,7 @@
     "material-ui": "^0.20.2",
     "material-ui-dropzone": "^2.5.0",
     "react": "^16.13.1",
+    "react-circular-progressbar": "^2.0.3",
     "react-dom": "^16.13.1",
     "react-jss": "^10.1.1",
     "react-leaflet": "^2.6.3",
