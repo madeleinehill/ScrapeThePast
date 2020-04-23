@@ -38,7 +38,7 @@ def download_pages_from_date(url, date):
             pages.append(response)
 
             # add a break to only get the front page
-            # break
+            break
 
     print(f'Received {len(pages)} pages from {date}')
     return pages
@@ -123,14 +123,16 @@ num_dates = 0
 start_time = time.time()
 
 documents = {}
-while len(dates) and len(documents) < n_doc:
+while len(dates) and len(documents.keys()) < n_doc:
+
     date = random.choice(dates)
 
-    documents[date] = download_pages_from_date(url, date)
-
-    num_total_pages += len(documents[date])
-    if len(documents[date]):
+    downloaded = download_pages_from_date(url, date)
+    if len(downloaded):
         num_dates += 1
+        documents[date] = downloaded
+
+        num_total_pages += len(documents[date])
 
     t_elapsed = time.time()-start_time
 

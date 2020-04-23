@@ -110,15 +110,6 @@ with open("./geoname_data/blacklist.txt") as file:
         if len(w.split(" ")) > 1:
             prefixes[w.split(" ")[0]].remove(w)
 
-
-# implement manual overrides i.e. ("york", "new york geo") associates
-    # york to the same entity as new york geo (NYC)
-overrides = {
-    ("york", "new york")
-}
-for o in overrides:
-    geoNames[o[0]] = geoNames[o[1]]
-
 # check that it's getting the highest population and cleaning strings
 assert geoData[geoNames["washington dc"]]["latitude"] == "38.89511"
 assert geoData[geoNames["phoenix"]]["latitude"] == "33.44838"

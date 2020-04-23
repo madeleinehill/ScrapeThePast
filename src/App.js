@@ -8,6 +8,7 @@ import Pane from "react-split-pane/lib/Pane";
 import configureStore from "./modules/store";
 import Sidebar from "./components/Sidebar";
 import Map from "./components/Map";
+import Guide from "./components/Guide";
 
 const reduxStore = configureStore();
 
@@ -21,6 +22,31 @@ const useStyles = createUseStyles({
       overflow: "hidden",
       top: "0",
       left: "0",
+    },
+    h2: {
+      fontFamily: "Red Hat Text",
+      fontWeight: "normal",
+      fontSize: "20px",
+      margin: "0",
+    },
+    h3: {
+      fontFamily: "Roboto",
+      fontWeight: "normal",
+      fontSize: "14px",
+      color: "#393939",
+      margin: "0",
+    },
+    p: {
+      fontSize: "12px",
+      fontFamily: "Roboto",
+    },
+    span: {
+      fontSize: "14px",
+      fontFamily: "Red Hat Text",
+    },
+    button: {
+      fontSize: "14px",
+      fontFamily: "Roboto",
     },
   },
 
@@ -90,6 +116,7 @@ function App() {
           <Map />
         </Pane>
       </SplitPane>
+      <Guide></Guide>
     </Provider>
   );
 }

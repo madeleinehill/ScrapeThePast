@@ -4,7 +4,7 @@ import Pane from "react-split-pane/lib/Pane";
 import Upload from "./Upload";
 import DataView from "./DataView";
 import MapControls from "./MapControls";
-import Blacklist from "./Blacklist";
+import Overrides from "./Overrides";
 import { createUseStyles } from "react-jss";
 
 const useStyles = createUseStyles({
@@ -17,27 +17,6 @@ const useStyles = createUseStyles({
     overflowY: "scroll",
     height: "100vh",
     minWidth: "250px",
-    "& h2": {
-      fontFamily: "Red Hat Text",
-      fontWeight: "normal",
-      fontSize: "20px",
-      margin: "0",
-    },
-    "& h3": {
-      fontFamily: "Roboto",
-      fontWeight: "normal",
-      fontSize: "14px",
-      color: "#393939",
-      margin: "0",
-    },
-    "& p, span": {
-      fontSize: "14px",
-      fontFamily: "Roboto",
-    },
-    "& button": {
-      fontSize: "14px",
-      fontFamily: "Roboto",
-    },
   },
   pane: {
     overflowY: "auto",
@@ -69,7 +48,7 @@ const Sidebar = (props) => {
           <MapControls />
         </Pane>
         <Pane className={classes.pane} minSize={"40px"} initialSize="40px">
-          <Blacklist />
+          <Overrides />
         </Pane>
         <Pane
           minSize={"30px"}

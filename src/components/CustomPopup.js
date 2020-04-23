@@ -16,10 +16,10 @@ const CustomPopup = (props) => {
 
   return (
     <div className={classes.card}>
-      <h3>
+      <h2>
         {props.data.name +
           (props.data.type === "city" ? `, ${props.data.admin_code}` : "")}
-      </h3>
+      </h2>
       <p>
         {" "}
         Number of mentions: {props.data.mentions} (

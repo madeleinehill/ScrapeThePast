@@ -10,16 +10,22 @@ import {
   ADD_TO_SUBSTITUTIONS,
   DELETE_FROM_SUBSTITUTIONS,
   SET_MAP_CONTROL,
+  INCLUDE_ALL,
+  EXCLUDE_ALL,
 } from "./actions";
 import _ from "lodash";
 
 export const defaultState = {
   documents: {},
   filterFunction: () => true,
-  mapControls: { scaleMarkers: 1, relativeSizing: true, threshold: 0 },
+  mapControls: {
+    scaleMarkers: 1,
+    relativeSizing: true,
+    threshold: 0,
+    groupByState: false,
+  },
   blacklist: {},
   substitutions: {},
-  groupByState: false,
 };
 
 const reducer = (state = defaultState, action) => {
@@ -28,6 +34,20 @@ const reducer = (state = defaultState, action) => {
       let { literal } = action.payload;
       let newState = _.cloneDeep(state);
       newState.blacklist[literal] = true;
+
+      return newState;
+    }
+
+    case EXCLUDE_ALL: {
+      let newState = _.cloneDeep(state);
+      Object.values(newState.documents).forEach((d) => (d.excluded = true));
+
+      return newState;
+    }
+
+    case INCLUDE_ALL: {
+      let newState = _.cloneDeep(state);
+      Object.values(newState.documents).forEach((d) => (d.excluded = false));
 
       return newState;
     }

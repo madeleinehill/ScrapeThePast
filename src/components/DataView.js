@@ -9,6 +9,8 @@ import {
   DELETE_DOCUMENT,
   TOGGLE_EXCLUDED_DOCUMENT,
   SET_DOCUMENT_YEAR,
+  INCLUDE_ALL,
+  EXCLUDE_ALL,
 } from "../modules/actions";
 
 const useStyles = createUseStyles({
@@ -105,6 +107,15 @@ const DataView = (props) => {
   const [expanded, setExpanded] = useState("");
   const [showFull, setShowFull] = useState(false);
 
+  const toggleIncludeAll = (value) => {
+    console.log();
+    if (value) {
+      props.includeAll();
+    } else {
+      props.excludeAll();
+    }
+  };
+
   return (
     <div className={classes.dataViewContainer}>
       <div className={classes.titleContainer}>
@@ -114,6 +125,49 @@ const DataView = (props) => {
         </h3>
       </div>
       <div className={classes.documentTable}>
+        <div className={classes.documentRow}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "nowrap",
+              alignItems: "center",
+              height: "20px",
+              maxWidth: "95%",
+            }}
+          >
+            {Object.keys(documents).length ? (
+              <>
+                <input
+                  type="checkbox"
+                  checked={Object.values(documents).every((d) => !d.excluded)}
+                  onChange={(e) => {
+                    console.log(e.target);
+                    toggleIncludeAll(e.target.checked);
+                  }}
+                />
+                <p
+                  style={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  select all
+                </p>
+              </>
+            ) : (
+              <p
+                style={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                No documents yet
+              </p>
+            )}
+          </div>
+        </div>
         {Object.keys(documents).map((key, i) => (
           <div
             key={i}
@@ -235,6 +289,8 @@ const mapDispatchToProps = (dispatch) => ({
   removeItemFromStore: (p) => dispatch({ type: DELETE_DOCUMENT, payload: p }),
   setDocumentYear: (key, year) =>
     dispatch({ type: SET_DOCUMENT_YEAR, payload: { key: key, year: year } }),
+  includeAll: () => dispatch({ type: INCLUDE_ALL }),
+  excludeAll: () => dispatch({ type: EXCLUDE_ALL }),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataView);
