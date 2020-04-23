@@ -44,7 +44,7 @@ const useStyles = createUseStyles({
   },
   options: {
     width: "100%",
-    maxWidth: "300px",
+    maxWidth: "200px",
   },
   option: {
     display: "flex",

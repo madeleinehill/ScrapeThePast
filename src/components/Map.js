@@ -1,14 +1,12 @@
 import React from "react";
-import { useSelector } from "react-redux";
 import { Map, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import { connect } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CustomPopup from "./CustomPopup";
-import { getFilteredMentions } from "../modules/selectors";
+import { getFilteredMentions, getTotalMentions } from "../modules/selectors";
 
 import { createUseStyles } from "react-jss";
-import geonames from "../utils/geonames";
 import geoData from "../utils/geo_data";
 
 // necessary to allow for correct loading of marker icon
@@ -29,6 +27,7 @@ const useStyles = createUseStyles((theme) => ({
 }));
 
 const MapWrapper = (props) => {
+  console.log(props.totalMentions);
   const classes = useStyles(props);
 
   //   const mapObjects: MapObject[] = useSelector((state) =>
@@ -44,6 +43,13 @@ const MapWrapper = (props) => {
     { uuid: "1", coord: [44, -90] },
     { uuid: "2", coord: [45, -90] },
   ];
+
+  const calulateSize = (count) => {
+    return props.relativeSizing
+      ? 500000 * Math.sqrt(count / props.totalMentions)
+      : 10000 * Math.sqrt(count);
+  };
+
   return (
     <>
       <Map className={classes.map} center={[35, -100]} zoom={5}>
@@ -67,7 +73,9 @@ const MapWrapper = (props) => {
             <Circle
               key={obs}
               center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
-              radius={10000 * Math.sqrt(props.mentions[obs].count)}
+              radius={
+                props.scaleMarkers * calulateSize(props.mentions[obs].count)
+              }
               color={geoData[obs].type === "state" ? "#F57" : "#57F"}
             >
               <Popup>
@@ -76,6 +84,7 @@ const MapWrapper = (props) => {
                     mentions: props.mentions[obs].count,
                     literals: props.mentions[obs].literals,
                     ...geoData[obs],
+                    totalMentions: props.totalMentions,
                   }}
                 />
               </Popup>
@@ -92,6 +101,9 @@ const MapWrapper = (props) => {
 const mapStateToProps = (state) => ({
   documents: state.documents,
   mentions: getFilteredMentions(state),
+  totalMentions: getTotalMentions(state),
+  relativeSizing: state.mapControls.relativeSizing,
+  scaleMarkers: state.mapControls.scaleMarkers,
 });
 
 const mapDispatchToProps = (dispatch) => ({});

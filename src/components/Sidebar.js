@@ -3,7 +3,7 @@ import SplitPane from "react-split-pane";
 import Pane from "react-split-pane/lib/Pane";
 import Upload from "./Upload";
 import DataView from "./DataView";
-import DatesIncluded from "./DatesIncluded";
+import MapControls from "./MapControls";
 import Blacklist from "./Blacklist";
 import { createUseStyles } from "react-jss";
 
@@ -66,7 +66,7 @@ const Sidebar = (props) => {
           <DataView />
         </Pane>
         <Pane className={classes.pane} minSize={"40px"} initialSize="40px">
-          <DatesIncluded />
+          <MapControls />
         </Pane>
         <Pane className={classes.pane} minSize={"40px"} initialSize="40px">
           <Blacklist />
@@ -90,6 +90,7 @@ const Sidebar = (props) => {
             source on Github{" "}
             <a
               target="_blank"
+              rel="noopener noreferrer"
               href="https://github.com/henryhill1999/ScrapeThePast"
             >
               here

@@ -1,10 +1,14 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
 import { createUseStyles } from "react-jss";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { Close } from "@material-ui/icons";
-import { ADD_TO_BLACKLIST, DELETE_FROM_BLACKLIST } from "../modules/actions";
+import {
+  ADD_TO_BLACKLIST,
+  DELETE_FROM_BLACKLIST,
+  ADD_TO_SUBSTITUTIONS,
+  DELETE_FROM_SUBSTITUTIONS,
+} from "../modules/actions";
 
 const useStyles = createUseStyles({
   dataViewContainer: {
@@ -53,7 +57,7 @@ const useStyles = createUseStyles({
     flexWrap: "noWrap",
     justifyContent: "space-between",
     alignItems: "center",
-    height: "20px",
+    height: "25px",
     "&:hover": {
       border: "solid 1px #CCC",
       backgroundColor: "#EEE",
@@ -85,15 +89,17 @@ const useStyles = createUseStyles({
 });
 
 const DataView = (props) => {
-  const { documents } = props;
   const classes = useStyles();
   const [literal, setLiteral] = useState("");
+  const [toLiteral, setToLiteral] = useState("");
+  const [fromLiteral, setFromLiteral] = useState("");
 
   return (
     <div className={classes.dataViewContainer}>
       <div className={classes.titleContainer}>
-        <h2>Blacklist</h2>
+        <h2>Overrides</h2>
       </div>
+      <span>Blacklist</span>
       <div className={classes.documentTable}>
         <div>
           <div className={classes.documentRow}>
@@ -132,6 +138,57 @@ const DataView = (props) => {
           </div>
         ))}
       </div>
+      <span>Re-Associations</span>
+      <div className={classes.documentTable}>
+        <div>
+          <div className={classes.documentRow}>
+            <input
+              id="filled-number"
+              size="small"
+              placeholder="from"
+              value={fromLiteral}
+              onChange={(e) => setFromLiteral(e.target.value)}
+              style={{ width: "90px" }}
+            />
+            <input
+              id="filled-number"
+              size="small"
+              placeholder="to"
+              value={toLiteral}
+              onChange={(e) => setToLiteral(e.target.value)}
+              style={{ width: "90px" }}
+            />
+            <button
+              style={{ marginRight: "20px" }}
+              disabled={!fromLiteral || !toLiteral}
+              onClick={() => {
+                props.addToSubstitutions(
+                  fromLiteral.toLowerCase().trim(),
+                  toLiteral.toLowerCase().trim(),
+                );
+                setFromLiteral("");
+                setToLiteral("");
+              }}
+            >
+              add
+            </button>
+          </div>
+        </div>
+        {Object.keys(props.blacklist).map((key, i) => (
+          <div key={i}>
+            <div className={classes.documentRow}>
+              <span>{key}</span>
+              <button
+                className={classes.deleteButton}
+                onClick={() => props.deleteFromBlacklist(key)}
+              >
+                <Close style={{ fontSize: "14px" }} />
+                <span className={"hide"}>remove</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -145,6 +202,16 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch({ type: ADD_TO_BLACKLIST, payload: { literal: literal } }),
   deleteFromBlacklist: (literal) =>
     dispatch({ type: DELETE_FROM_BLACKLIST, payload: { literal: literal } }),
+  addToSubstitutions: (fromLiteral, toLiteral) =>
+    dispatch({
+      type: ADD_TO_SUBSTITUTIONS,
+      payload: { fromLiteral: fromLiteral, toLiteral: toLiteral },
+    }),
+  deleteFromSubstitutions: (fromLiteral) =>
+    dispatch({
+      type: DELETE_FROM_SUBSTITUTIONS,
+      payload: { literal: fromLiteral },
+    }),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DataView);

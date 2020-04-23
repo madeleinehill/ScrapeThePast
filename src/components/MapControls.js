@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
-import { SET_FILTER_FUNCTION } from "../modules/actions";
+import { SET_FILTER_FUNCTION, SET_MAP_CONTROL } from "../modules/actions";
 import { createUseStyles } from "react-jss";
 import InputRange from "react-input-range";
 import "react-input-range/lib/css/index.css";
@@ -46,7 +46,7 @@ const useStyles = createUseStyles({
   },
 });
 
-const Dates = (props) => {
+const MapControls = (props) => {
   const classes = useStyles();
   const [includeND, setIncludeND] = useState(true);
 
@@ -65,11 +65,8 @@ const Dates = (props) => {
     max: docsRange[1],
   });
 
-  const [userSet, recordUserSet] = useState(false);
-
   const handleChange = (value) => {
     setYearRange(value);
-    recordUserSet(true);
     props.setFilterFunction(
       (year) =>
         (includeND && !year) || (year >= value.min && year <= value.max),
@@ -116,21 +113,29 @@ const Dates = (props) => {
             <p>Use relative sizing:</p>
             <input
               type="checkbox"
-              checked={includeND}
+              checked={props.relativeSizing}
               onChange={() => {
-                setIncludeND(!includeND);
-                handleChange(yearRange);
+                props.setMapControl({
+                  attribute: "relativeSizing",
+                  value: !props.relativeSizing,
+                });
               }}
             />
           </div>
           <div className={classes.option}>
             <p>Scale markers:</p>
             <input
-              type="checkbox"
-              checked={includeND}
-              onChange={() => {
-                setIncludeND(!includeND);
-                handleChange(yearRange);
+              id="filled-number"
+              size="small"
+              type="number"
+              value={props.scaleMarkers}
+              step={0.1}
+              style={{ width: "50px" }}
+              onChange={(e) => {
+                props.setMapControl({
+                  attribute: "scaleMarkers",
+                  value: e.target.value,
+                });
               }}
             />
           </div>
@@ -142,10 +147,13 @@ const Dates = (props) => {
 
 const mapStateToProps = (state) => ({
   documents: state.documents,
+  relativeSizing: state.mapControls.relativeSizing,
+  scaleMarkers: state.mapControls.scaleMarkers,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   setFilterFunction: (p) => dispatch({ type: SET_FILTER_FUNCTION, payload: p }),
+  setMapControl: (p) => dispatch({ type: SET_MAP_CONTROL, payload: p }),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(Dates);
+export default connect(mapStateToProps, mapDispatchToProps)(MapControls);

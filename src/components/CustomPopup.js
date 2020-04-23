@@ -1,10 +1,5 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Card from "@material-ui/core/Card";
-import CardActions from "@material-ui/core/CardActions";
-import CardContent from "@material-ui/core/CardContent";
-import Button from "@material-ui/core/Button";
-import Typography from "@material-ui/core/Typography";
 
 const useStyles = makeStyles({
   card: {
@@ -25,7 +20,12 @@ const CustomPopup = (props) => {
         {props.data.name +
           (props.data.type === "city" ? `, ${props.data.admin_code}` : "")}
       </h3>
-      <p> Number of mentions: {props.data.mentions}</p>
+      <p>
+        {" "}
+        Number of mentions: {props.data.mentions} (
+        {((100 * props.data.mentions) / props.data.totalMentions).toFixed(1)}%
+        of all)
+      </p>
       <p> Name used: </p>
       <ul>
         {Object.keys(props.data.literals)
@@ -35,7 +35,7 @@ const CustomPopup = (props) => {
           )
           .map((l) => (
             <li key={l}>
-              ({props.data.literals[l].count}) {l}
+              {l} ({props.data.literals[l].count} times)
             </li>
           ))}
       </ul>

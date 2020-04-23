@@ -7,13 +7,18 @@ import {
   SET_DOCUMENT_YEAR,
   ADD_TO_BLACKLIST,
   DELETE_FROM_BLACKLIST,
+  ADD_TO_SUBSTITUTIONS,
+  DELETE_FROM_SUBSTITUTIONS,
+  SET_MAP_CONTROL,
 } from "./actions";
 import _ from "lodash";
 
 export const defaultState = {
   documents: {},
   filterFunction: () => true,
+  mapControls: { scaleMarkers: 1, relativeSizing: true },
   blacklist: {},
+  substitutions: {},
 };
 
 const reducer = (state = defaultState, action) => {
@@ -30,6 +35,30 @@ const reducer = (state = defaultState, action) => {
       let { literal } = action.payload;
       let newState = _.cloneDeep(state);
       delete newState.blacklist[literal];
+
+      return newState;
+    }
+
+    case ADD_TO_SUBSTITUTIONS: {
+      let { fromLiteral, toLiteral } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.substitutions[fromLiteral] = toLiteral;
+
+      return newState;
+    }
+
+    case DELETE_FROM_SUBSTITUTIONS: {
+      let { literal } = action.payload;
+      let newState = _.cloneDeep(state);
+      delete newState.substituions[literal];
+
+      return newState;
+    }
+
+    case SET_MAP_CONTROL: {
+      let { attribute, value } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.mapControls[attribute] = value;
 
       return newState;
     }
