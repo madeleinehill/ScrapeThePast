@@ -212,7 +212,7 @@ const Upload = (props) => {
             </select>
               </div> */}
           <div className={classes.option}>
-            <p>Year:</p>
+            <p>Batch Year:</p>
             <input
               id="filled-number"
               size="small"

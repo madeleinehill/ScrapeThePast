@@ -65,11 +65,10 @@ const MapControls = (props) => {
     max: docsRange[1],
   });
 
-  const handleChange = (value) => {
+  const handleChange = (value, incND = includeND) => {
     setYearRange(value);
     props.setFilterFunction(
-      (year) =>
-        (includeND && !year) || (year >= value.min && year <= value.max),
+      (year) => (incND && !year) || (year >= value.min && year <= value.max),
     );
   };
 
@@ -105,7 +104,7 @@ const MapControls = (props) => {
               checked={includeND}
               onChange={() => {
                 setIncludeND(!includeND);
-                handleChange(yearRange);
+                handleChange(yearRange, !includeND);
               }}
             />
           </div>
@@ -123,18 +122,49 @@ const MapControls = (props) => {
             />
           </div>
           <div className={classes.option}>
-            <p>Scale markers:</p>
+            <p>Marker size:</p>
             <input
-              id="filled-number"
               size="small"
               type="number"
               value={props.scaleMarkers}
+              min="0"
               step={0.1}
               style={{ width: "50px" }}
               onChange={(e) => {
                 props.setMapControl({
                   attribute: "scaleMarkers",
                   value: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div className={classes.option}>
+            <p>Threshold:</p>
+            <input
+              size="small"
+              type="number"
+              value={props.threshold}
+              min="0"
+              max="100"
+              step={0.2}
+              style={{ width: "50px" }}
+              onChange={(e) => {
+                props.setMapControl({
+                  attribute: "threshold",
+                  value: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div className={classes.option}>
+            <p>Group by state:</p>
+            <input
+              type="checkbox"
+              checked={props.groupByState}
+              onChange={() => {
+                props.setMapControl({
+                  attribute: "groupByState",
+                  value: !props.groupByState,
                 });
               }}
             />
@@ -149,6 +179,8 @@ const mapStateToProps = (state) => ({
   documents: state.documents,
   relativeSizing: state.mapControls.relativeSizing,
   scaleMarkers: state.mapControls.scaleMarkers,
+  threshold: state.mapControls.threshold,
+  groupByState: state.mapControls.groupByState,
 });
 
 const mapDispatchToProps = (dispatch) => ({

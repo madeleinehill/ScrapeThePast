@@ -16,9 +16,10 @@ import _ from "lodash";
 export const defaultState = {
   documents: {},
   filterFunction: () => true,
-  mapControls: { scaleMarkers: 1, relativeSizing: true },
+  mapControls: { scaleMarkers: 1, relativeSizing: true, threshold: 0 },
   blacklist: {},
   substitutions: {},
+  groupByState: false,
 };
 
 const reducer = (state = defaultState, action) => {

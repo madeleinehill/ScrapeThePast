@@ -27,18 +27,26 @@ const CustomPopup = (props) => {
         of all)
       </p>
       <p> Name used: </p>
-      <ul>
-        {Object.keys(props.data.literals)
-          .sort(
-            (a, b) =>
-              props.data.literals[a].count - props.data.literals[b].count,
-          )
-          .map((l) => (
-            <li key={l}>
-              {l} ({props.data.literals[l].count} times)
-            </li>
-          ))}
-      </ul>
+      <div
+        style={{
+          backgroundColor: "#EEE",
+          maxHeight: "190px",
+          overflowY: "auto",
+        }}
+      >
+        <ul>
+          {Object.keys(props.data.literals)
+            .sort(
+              (a, b) =>
+                props.data.literals[b].count - props.data.literals[a].count,
+            )
+            .map((l) => (
+              <li key={l}>
+                {l} ({props.data.literals[l].count} times)
+              </li>
+            ))}
+        </ul>
+      </div>
 
       {props.data.population && <p> Population: {props.data.population}</p>}
       <p>

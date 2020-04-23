@@ -104,7 +104,6 @@ const DataView = (props) => {
         <div>
           <div className={classes.documentRow}>
             <input
-              id="filled-number"
               size="small"
               placeholder="+add phrase"
               value={literal}
@@ -143,7 +142,6 @@ const DataView = (props) => {
         <div>
           <div className={classes.documentRow}>
             <input
-              id="filled-number"
               size="small"
               placeholder="from"
               value={fromLiteral}
@@ -151,7 +149,6 @@ const DataView = (props) => {
               style={{ width: "90px" }}
             />
             <input
-              id="filled-number"
               size="small"
               placeholder="to"
               value={toLiteral}
@@ -174,13 +171,15 @@ const DataView = (props) => {
             </button>
           </div>
         </div>
-        {Object.keys(props.blacklist).map((key, i) => (
+        {Object.keys(props.substitutions).map((key, i) => (
           <div key={i}>
             <div className={classes.documentRow}>
-              <span>{key}</span>
+              <span>
+                {key} -> {props.substitutions[key]}
+              </span>
               <button
                 className={classes.deleteButton}
-                onClick={() => props.deleteFromBlacklist(key)}
+                onClick={() => props.deleteFromSubstitutions(key)}
               >
                 <Close style={{ fontSize: "14px" }} />
                 <span className={"hide"}>remove</span>
@@ -195,6 +194,7 @@ const DataView = (props) => {
 
 const mapStateToProps = (state) => ({
   blacklist: state.blacklist,
+  substitutions: state.substitutions,
 });
 
 const mapDispatchToProps = (dispatch) => ({

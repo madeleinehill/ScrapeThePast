@@ -70,27 +70,30 @@ const MapWrapper = (props) => {
         )) */}}
         {Object.keys(props.mentions).map((obs, i) => {
           return (
-            <Circle
-              key={obs}
-              center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
-              radius={
-                props.scaleMarkers * calulateSize(props.mentions[obs].count)
-              }
-              color={geoData[obs].type === "state" ? "#F57" : "#57F"}
-            >
-              <Popup>
-                <CustomPopup
-                  data={{
-                    mentions: props.mentions[obs].count,
-                    literals: props.mentions[obs].literals,
-                    ...geoData[obs],
-                    totalMentions: props.totalMentions,
-                  }}
-                />
-              </Popup>
-              {/* title={obs.name} description={obs.description} */}
-              {/* </Popup> */}
-            </Circle>
+            (100 * props.mentions[obs].count) / props.totalMentions >=
+              props.threshold && (
+              <Circle
+                key={obs}
+                center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
+                radius={
+                  props.scaleMarkers * calulateSize(props.mentions[obs].count)
+                }
+                color={geoData[obs].type === "state" ? "#F57" : "#57F"}
+              >
+                <Popup>
+                  <CustomPopup
+                    data={{
+                      mentions: props.mentions[obs].count,
+                      literals: props.mentions[obs].literals,
+                      ...geoData[obs],
+                      totalMentions: props.totalMentions,
+                    }}
+                  />
+                </Popup>
+                {/* title={obs.name} description={obs.description} */}
+                {/* </Popup> */}
+              </Circle>
+            )
           );
         })}
       </Map>
@@ -104,6 +107,7 @@ const mapStateToProps = (state) => ({
   totalMentions: getTotalMentions(state),
   relativeSizing: state.mapControls.relativeSizing,
   scaleMarkers: state.mapControls.scaleMarkers,
+  threshold: state.mapControls.threshold,
 });
 
 const mapDispatchToProps = (dispatch) => ({});
