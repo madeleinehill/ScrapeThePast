@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { connect } from "react-redux";
-import { SET_FILTER_FUNCTION, SET_MAP_CONTROL } from "../modules/actions";
+import { SET_MAP_CONTROL } from "../modules/actions";
 import { createUseStyles } from "react-jss";
 import InputRange from "react-input-range";
 import "react-input-range/lib/css/index.css";
@@ -16,6 +16,29 @@ const useStyles = createUseStyles({
     },
     "& .input-range__track, .input-range__track--active": {
       transition: "none !important",
+    },
+    paddingTop: "40px",
+  },
+  titleContainer: {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "40px",
+    display: "flex",
+    flexWrap: "noWrap",
+    justifyContent: "space-between",
+    alignItems: "center",
+    "& > .title": {
+      width: "100%",
+      height: "40px",
+      "& > h2": {
+        margin: "10px",
+      },
+    },
+    "& :hover": {
+      cursor: "pointer",
+      backgroundColor: "#EEE",
     },
   },
   button: {
@@ -74,7 +97,11 @@ const MapControls = (props) => {
 
   return (
     <div className={classes.paneContainer}>
-      <h2>Map Controls</h2>
+      <div className={classes.titleContainer} onClick={props.setClose}>
+        <div className="title">
+          <h2>Map Controls</h2>
+        </div>
+      </div>
       <p style={{ margin: "10px" }}>Dates Included</p>
       <div className={classes.rangeContainer}>
         <InputRange
@@ -139,18 +166,36 @@ const MapControls = (props) => {
             />
           </div>
           <div className={classes.option}>
-            <p>Threshold:</p>
+            <p>Frequency Threshold (%):</p>
             <input
               size="small"
               type="number"
               value={props.threshold}
               min="0"
               max="100"
-              step={0.2}
+              step={0.1}
               style={{ width: "50px" }}
               onChange={(e) => {
                 props.setMapControl({
                   attribute: "threshold",
+                  value: e.target.value,
+                });
+              }}
+            />
+          </div>
+          <div className={classes.option}>
+            <p>Population Threshold:</p>
+            <input
+              size="small"
+              type="number"
+              value={props.popThreshold}
+              min={15000}
+              max={10000000}
+              step={10000}
+              style={{ width: "50px" }}
+              onChange={(e) => {
+                props.setMapControl({
+                  attribute: "popThreshold",
                   value: e.target.value,
                 });
               }}
@@ -180,11 +225,16 @@ const mapStateToProps = (state) => ({
   relativeSizing: state.mapControls.relativeSizing,
   scaleMarkers: state.mapControls.scaleMarkers,
   threshold: state.mapControls.threshold,
+  popThreshold: state.mapControls.popThreshold,
   groupByState: state.mapControls.groupByState,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setFilterFunction: (p) => dispatch({ type: SET_FILTER_FUNCTION, payload: p }),
+  setFilterFunction: (fn) =>
+    dispatch({
+      type: SET_MAP_CONTROL,
+      payload: { attribute: "filterFunction", value: fn },
+    }),
   setMapControl: (p) => dispatch({ type: SET_MAP_CONTROL, payload: p }),
 });
 

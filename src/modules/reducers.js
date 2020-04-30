@@ -3,38 +3,113 @@ import {
   UPDATE_DOCUMENT,
   DELETE_DOCUMENT,
   TOGGLE_EXCLUDED_DOCUMENT,
-  SET_FILTER_FUNCTION,
   SET_DOCUMENT_YEAR,
-  ADD_TO_BLACKLIST,
-  DELETE_FROM_BLACKLIST,
-  ADD_TO_SUBSTITUTIONS,
-  DELETE_FROM_SUBSTITUTIONS,
+  ADD_TO_OVERRIDES,
+  DELETE_FROM_OVERRIDES,
+  SET_OVERRIDES,
   SET_MAP_CONTROL,
   INCLUDE_ALL,
   EXCLUDE_ALL,
+  CLEAR_OVERRIDES,
 } from "./actions";
 import _ from "lodash";
+import geocodeText from "./geocode";
+import defaultWhitelist from "../utils/defaultWhitelist.json";
 
 export const defaultState = {
   documents: {},
-  filterFunction: () => true,
   mapControls: {
     scaleMarkers: 1,
     relativeSizing: true,
     threshold: 0,
+    popThreshold: 15000,
     groupByState: false,
+    filterFunction: () => true,
   },
-  blacklist: {},
-  substitutions: {},
+  overrides: {
+    blacklist: {},
+    whitelist: defaultWhitelist.reduce((res, el) => {
+      res[el] = true;
+      return res;
+    }, {}),
+    associations: {},
+    options: { useWhitelist: false, useAlternateNames: true },
+  },
+};
+
+const refreshGeocoding = (state) => {
+  Object.values(state.documents).forEach((d) => {
+    d.geonames = geocodeText(
+      d.text,
+      state.overrides.associations,
+      state.overrides.whitelist,
+      state.overrides.options.useWhitelist,
+      state.overrides.options.useAlternateNames,
+    );
+  });
+  return state;
 };
 
 const reducer = (state = defaultState, action) => {
   switch (action.type) {
-    case ADD_TO_BLACKLIST: {
-      let { literal } = action.payload;
+    case ADD_TO_OVERRIDES: {
+      let { attribute, override } = action.payload;
       let newState = _.cloneDeep(state);
-      newState.blacklist[literal] = true;
+      switch (attribute) {
+        case "blacklist": {
+          newState.overrides.blacklist[override.literal] = true;
+          return newState;
+        }
+        case "association": {
+          newState.overrides.associations[override.fromLiteral] =
+            override.toLiteral;
+          newState = refreshGeocoding(newState);
+          return newState;
+        }
+        case "whitelist": {
+          newState.overrides.whitelist[override.literal] = true;
+          newState = refreshGeocoding(newState);
+          return newState;
+        }
+        default: {
+          console.error("invalid case for override");
+        }
+      }
+      return newState;
+    }
 
+    case DELETE_FROM_OVERRIDES: {
+      let { attribute, override } = action.payload;
+      let newState = _.cloneDeep(state);
+      switch (attribute) {
+        case "blacklist": {
+          delete newState.overrides.blacklist[override.literal];
+          return newState;
+        }
+        case "association": {
+          delete newState.overrides.associations[override.fromLiteral];
+
+          newState = refreshGeocoding(newState);
+          return newState;
+        }
+        case "whitelist": {
+          delete newState.overrides.whitelist[override.literal];
+          newState = refreshGeocoding(newState);
+          return newState;
+        }
+        default: {
+          console.error("invalid case for override");
+        }
+      }
+
+      return newState;
+    }
+
+    case CLEAR_OVERRIDES: {
+      let { attribute } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.overrides[attribute] = {};
+      newState = refreshGeocoding(newState);
       return newState;
     }
 
@@ -52,30 +127,6 @@ const reducer = (state = defaultState, action) => {
       return newState;
     }
 
-    case DELETE_FROM_BLACKLIST: {
-      let { literal } = action.payload;
-      let newState = _.cloneDeep(state);
-      delete newState.blacklist[literal];
-
-      return newState;
-    }
-
-    case ADD_TO_SUBSTITUTIONS: {
-      let { fromLiteral, toLiteral } = action.payload;
-      let newState = _.cloneDeep(state);
-      newState.substitutions[fromLiteral] = toLiteral;
-
-      return newState;
-    }
-
-    case DELETE_FROM_SUBSTITUTIONS: {
-      let { literal } = action.payload;
-      let newState = _.cloneDeep(state);
-      delete newState.substituions[literal];
-
-      return newState;
-    }
-
     case SET_MAP_CONTROL: {
       let { attribute, value } = action.payload;
       let newState = _.cloneDeep(state);
@@ -84,16 +135,20 @@ const reducer = (state = defaultState, action) => {
       return newState;
     }
 
+    case SET_OVERRIDES: {
+      let { attribute, value } = action.payload;
+      let newState = _.cloneDeep(state);
+      newState.overrides.options[attribute] = value;
+
+      newState = refreshGeocoding(newState);
+
+      return newState;
+    }
+
     case SET_DOCUMENT_YEAR: {
       let { key, year } = action.payload;
       let newState = _.cloneDeep(state);
       newState.documents[key].year = year;
-
-      return newState;
-    }
-    case SET_FILTER_FUNCTION: {
-      let newState = _.cloneDeep(state);
-      newState.filterFunction = action.payload;
 
       return newState;
     }
@@ -111,14 +166,18 @@ const reducer = (state = defaultState, action) => {
       newItem.degree = action.payload.text ? 1 : 0;
       newItem.excluded = false;
       newItem.year = action.payload.year ? parseInt(action.payload.year) : "";
+      newItem.geonames = geocodeText(
+        newItem.text,
+        newState.overrides.associations,
+        newState.overrides.whitelist,
+        newState.overrides.options.useWhitelist,
+      );
 
       newState.documents[newItem.path] = newItem;
 
       return newState;
     }
     case UPDATE_DOCUMENT: {
-      console.log(action);
-
       let newData = { ...action.payload };
       let newState = _.cloneDeep(state);
 
@@ -129,9 +188,15 @@ const reducer = (state = defaultState, action) => {
         newData.confidence / parseFloat(newItem.degree + 1);
 
       newItem.degree += 1;
-      newItem.geonames += newData.geonames;
       newItem.loading = newData.loading;
       newItem.percentLoaded = newData.percentLoaded;
+
+      newItem.geonames += geocodeText(
+        newData.text,
+        newState.overrides.associations,
+        newState.overrides.whitelist,
+        newState.overrides.options.useWhitelist,
+      );
 
       return newState;
     }

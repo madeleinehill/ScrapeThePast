@@ -16,17 +16,38 @@ import {
 const useStyles = createUseStyles({
   dataViewContainer: {
     padding: "10px",
+    paddingTop: "40px",
   },
   titleContainer: {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "40px",
     display: "flex",
     flexWrap: "noWrap",
     justifyContent: "space-between",
     alignItems: "center",
+    "& > .title": {
+      width: "100%",
+      height: "40px",
+      "& > h2": {
+        margin: "10px",
+      },
+      "& > h3": {
+        margin: "13px",
+      },
+    },
+    "& :hover": {
+      cursor: "pointer",
+      backgroundColor: "#EEE",
+    },
   },
   documentTable: {
     margin: "10px 15px",
     borderTop: "solid 1px #F5F5F5",
     borderBottom: "solid 1px #F5F5F5",
+    backgroundColor: "#EEE",
   },
   expandedView: {
     position: "relative",
@@ -82,13 +103,15 @@ const useStyles = createUseStyles({
       margin: "5px 0",
     },
     "& button": {
+      position: "relative",
       border: "none",
       borderRadius: "5px",
       cursor: "pointer",
-      width: "24px",
-      height: "24px",
+      width: "16px",
+      height: "16px",
       padding: "0",
       outline: "none",
+      marginRight: "16px",
 
       "&:hover": {
         backgroundColor: "#3047C8",
@@ -118,11 +141,16 @@ const DataView = (props) => {
 
   return (
     <div className={classes.dataViewContainer}>
-      <div className={classes.titleContainer}>
-        <h2>Documents</h2>
-        <h3>
-          ({Object.keys(documents).length} document{!documents.length && "s"})
-        </h3>
+      <div className={classes.titleContainer} onClick={props.setClose}>
+        <div
+          className="title"
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <h2>Documents</h2>
+          <h3>
+            ({Object.keys(documents).length} document{!documents.length && "s"})
+          </h3>
+        </div>
       </div>
       <div className={classes.documentTable}>
         <div className={classes.documentRow}>
@@ -212,7 +240,11 @@ const DataView = (props) => {
                 <button
                   onClick={() => setExpanded(expanded === key ? "" : key)}
                 >
-                  {expanded === key ? <ExpandLess /> : <ExpandMore />}
+                  {expanded === key ? (
+                    <ExpandLess style={{ fontSize: "16px" }} />
+                  ) : (
+                    <ExpandMore style={{ fontSize: "16px" }} />
+                  )}
                   <span className={"hide"}>more info</span>
                 </button>
               )}
@@ -260,7 +292,7 @@ const DataView = (props) => {
                   transition: "height 0.2s",
                 }}
               >
-                {documents[key].text}
+                {documents[key].text.replace(/\\n/g, " ")}
               </p>
               <p>
                 <button

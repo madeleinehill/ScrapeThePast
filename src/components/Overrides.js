@@ -4,28 +4,46 @@ import { createUseStyles } from "react-jss";
 import "react-circular-progressbar/dist/styles.css";
 import { Close } from "@material-ui/icons";
 import {
-  ADD_TO_BLACKLIST,
-  DELETE_FROM_BLACKLIST,
-  ADD_TO_SUBSTITUTIONS,
-  DELETE_FROM_SUBSTITUTIONS,
+  ADD_TO_OVERRIDES,
+  DELETE_FROM_OVERRIDES,
+  SET_OVERRIDES,
+  CLEAR_OVERRIDES,
 } from "../modules/actions";
 
 const useStyles = createUseStyles({
   dataViewContainer: {
     padding: "10px",
+    paddingTop: "40px",
   },
   titleContainer: {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "40px",
     display: "flex",
     flexWrap: "noWrap",
     justifyContent: "space-between",
     alignItems: "center",
+    "& > .title": {
+      width: "100%",
+      height: "40px",
+      "& > h2": {
+        margin: "10px",
+      },
+    },
+    "& :hover": {
+      cursor: "pointer",
+      backgroundColor: "#EEE",
+    },
   },
   documentTable: {
     margin: "10px 15px",
     borderTop: "solid 1px #F5F5F5",
     borderBottom: "solid 1px #F5F5F5",
-    maxHeight: "70px",
+    maxHeight: "190px",
     overflowY: "scroll",
+    backgroundColor: "#EEE",
   },
   deleteButton: {
     position: "relative",
@@ -86,18 +104,109 @@ const useStyles = createUseStyles({
       margin: "5px 0",
     },
   },
+  clearButton: {
+    backgroundColor: "#C83047",
+    color: "#FFF",
+    fontSize: "14px",
+    cursor: "pointer",
+    borderRadius: "0",
+    marginRight: "5px",
+    "&:hover": {
+      backgroundColor: "#A82037",
+    },
+  },
 });
 
 const Overrides = (props) => {
   const classes = useStyles();
-  const [literal, setLiteral] = useState("");
-  const [toLiteral, setToLiteral] = useState("");
-  const [fromLiteral, setFromLiteral] = useState("");
+  const [assocToLiteral, setAssocToLiteral] = useState();
+  const [assocFromLiteral, setAssocFromLiteral] = useState("");
+  const [blacklistLiteral, setBlacklistLiteral] = useState("");
+  const [whitelistLiteral, setWhitelistLiteral] = useState("");
 
   return (
     <div className={classes.dataViewContainer}>
-      <div className={classes.titleContainer}>
-        <h2>Overrides</h2>
+      <div className={classes.titleContainer} onClick={props.setClose}>
+        <div className="title">
+          <h2>Overrides</h2>
+        </div>
+      </div>
+
+      <span>Manual Phrases</span>
+      <div className={classes.documentTable}>
+        <div>
+          <div className={classes.documentRow}>
+            <input
+              size="small"
+              placeholder="phrase"
+              value={assocFromLiteral}
+              onChange={(e) => setAssocFromLiteral(e.target.value)}
+              style={{ width: "90px" }}
+            />
+            <input
+              size="small"
+              placeholder="place"
+              value={assocToLiteral}
+              onChange={(e) => setAssocToLiteral(e.target.value)}
+              style={{ width: "90px" }}
+            />
+            <button
+              style={{ marginRight: "20px" }}
+              disabled={!assocFromLiteral || !assocToLiteral}
+              onClick={() => {
+                props.addToAssociations(
+                  assocFromLiteral
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z ]/g, ""),
+                  assocToLiteral
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z ]/g, ""),
+                );
+                setAssocFromLiteral("");
+                setAssocToLiteral("");
+              }}
+            >
+              add
+            </button>
+          </div>
+        </div>
+        {Object.keys(props.associations).map((key, i) => (
+          <div key={i}>
+            <div className={classes.documentRow}>
+              <span>
+                {key} -> {props.associations[key]}
+              </span>
+              <button
+                className={classes.deleteButton}
+                onClick={() => props.deleteFromAssociations(key)}
+              >
+                <Close style={{ fontSize: "14px" }} />
+                <span className={"hide"}>remove</span>
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          margin: "10px",
+          marginTop: "0",
+        }}
+      >
+        <p style={{ display: "inline-block", margin: "0" }}>
+          Use alternate names
+        </p>
+        <input
+          type="checkbox"
+          checked={props.options.useAlternateNames}
+          onChange={(e) => props.toggleAlternateNames(e.target.checked)}
+          style={{ display: "inline-block" }}
+        />
       </div>
       <span>Blacklist</span>
       <div className={classes.documentTable}>
@@ -106,16 +215,21 @@ const Overrides = (props) => {
             <input
               size="small"
               placeholder="+add phrase"
-              value={literal}
-              onChange={(e) => setLiteral(e.target.value)}
+              value={blacklistLiteral}
+              onChange={(e) => setBlacklistLiteral(e.target.value)}
               style={{ width: "180px" }}
             />
             <button
               style={{ marginRight: "20px" }}
-              disabled={!literal}
+              disabled={!blacklistLiteral}
               onClick={() => {
-                props.addToBlacklist(literal.toLowerCase().trim());
-                setLiteral("");
+                props.addToBlacklist(
+                  blacklistLiteral
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z ]/g, ""),
+                );
+                setBlacklistLiteral("");
               }}
             >
               add
@@ -137,49 +251,52 @@ const Overrides = (props) => {
           </div>
         ))}
       </div>
-      <span>Re-Associations</span>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>Whitelist</span>
+        <div style={{ display: "inline-block", marginRight: "10px" }}>
+          <p style={{ display: "inline-block", margin: "0" }}>enabled</p>{" "}
+          <input
+            type="checkbox"
+            checked={props.options.useWhitelist}
+            onChange={(e) => props.toggleWhitelist(e.target.checked)}
+            style={{ display: "inline-block" }}
+          />
+        </div>
+      </div>
       <div className={classes.documentTable}>
         <div>
           <div className={classes.documentRow}>
             <input
               size="small"
-              placeholder="from"
-              value={fromLiteral}
-              onChange={(e) => setFromLiteral(e.target.value)}
-              style={{ width: "90px" }}
-            />
-            <input
-              size="small"
-              placeholder="to"
-              value={toLiteral}
-              onChange={(e) => setToLiteral(e.target.value)}
-              style={{ width: "90px" }}
+              placeholder="+add phrase"
+              value={whitelistLiteral}
+              onChange={(e) => setWhitelistLiteral(e.target.value)}
+              style={{ width: "180px" }}
             />
             <button
               style={{ marginRight: "20px" }}
-              disabled={!fromLiteral || !toLiteral}
+              disabled={!whitelistLiteral}
               onClick={() => {
-                props.addToSubstitutions(
-                  fromLiteral.toLowerCase().trim(),
-                  toLiteral.toLowerCase().trim(),
+                props.addToWhitelist(
+                  whitelistLiteral
+                    .toLowerCase()
+                    .trim()
+                    .replace(/[^a-z ]/g, ""),
                 );
-                setFromLiteral("");
-                setToLiteral("");
+                setWhitelistLiteral("");
               }}
             >
               add
             </button>
           </div>
         </div>
-        {Object.keys(props.substitutions).map((key, i) => (
+        {Object.keys(props.whitelist).map((key, i) => (
           <div key={i}>
             <div className={classes.documentRow}>
-              <span>
-                {key} -> {props.substitutions[key]}
-              </span>
+              <span>{key}</span>
               <button
                 className={classes.deleteButton}
-                onClick={() => props.deleteFromSubstitutions(key)}
+                onClick={() => props.deleteFromWhitelist(key)}
               >
                 <Close style={{ fontSize: "14px" }} />
                 <span className={"hide"}>remove</span>
@@ -188,29 +305,100 @@ const Overrides = (props) => {
           </div>
         ))}
       </div>
+      <div
+        style={{ width: "100%", display: "flex", justifyContent: "flex-end" }}
+      >
+        <button className={classes.clearButton} onClick={props.clearWhitelist}>
+          Clear Whitelist
+        </button>
+      </div>
     </div>
   );
 };
 
 const mapStateToProps = (state) => ({
-  blacklist: state.blacklist,
-  substitutions: state.substitutions,
+  blacklist: state.overrides.blacklist,
+  associations: state.overrides.associations,
+  whitelist: state.overrides.whitelist,
+  options: state.overrides.options,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   addToBlacklist: (literal) =>
-    dispatch({ type: ADD_TO_BLACKLIST, payload: { literal: literal } }),
-  deleteFromBlacklist: (literal) =>
-    dispatch({ type: DELETE_FROM_BLACKLIST, payload: { literal: literal } }),
-  addToSubstitutions: (fromLiteral, toLiteral) =>
     dispatch({
-      type: ADD_TO_SUBSTITUTIONS,
-      payload: { fromLiteral: fromLiteral, toLiteral: toLiteral },
+      type: ADD_TO_OVERRIDES,
+      payload: {
+        attribute: "blacklist",
+        override: { literal: literal },
+      },
     }),
-  deleteFromSubstitutions: (fromLiteral) =>
+  deleteFromBlacklist: (literal) =>
     dispatch({
-      type: DELETE_FROM_SUBSTITUTIONS,
-      payload: { literal: fromLiteral },
+      type: DELETE_FROM_OVERRIDES,
+      payload: {
+        attribute: "blacklist",
+        override: { literal: literal },
+      },
+    }),
+  addToWhitelist: (fromLiteral) =>
+    dispatch({
+      type: ADD_TO_OVERRIDES,
+      payload: {
+        attribute: "whitelist",
+        override: { literal: fromLiteral },
+      },
+    }),
+  deleteFromWhitelist: (fromLiteral) =>
+    dispatch({
+      type: DELETE_FROM_OVERRIDES,
+
+      payload: {
+        attribute: "whitelist",
+        override: { literal: fromLiteral },
+      },
+    }),
+  addToAssociations: (fromLiteral, toLiteral) =>
+    dispatch({
+      type: ADD_TO_OVERRIDES,
+      payload: {
+        attribute: "association",
+        override: { fromLiteral: fromLiteral, toLiteral: toLiteral },
+      },
+    }),
+  deleteFromAssociations: (fromLiteral) =>
+    dispatch({
+      type: DELETE_FROM_OVERRIDES,
+
+      payload: {
+        attribute: "association",
+        override: { fromLiteral: fromLiteral },
+      },
+    }),
+  toggleWhitelist: (value) =>
+    dispatch({
+      type: SET_OVERRIDES,
+
+      payload: {
+        attribute: "useWhitelist",
+        value: value,
+      },
+    }),
+  toggleAlternateNames: (value) =>
+    dispatch({
+      type: SET_OVERRIDES,
+
+      payload: {
+        attribute: "useAlternateNames",
+        value: value,
+      },
+    }),
+  clearWhitelist: () =>
+    dispatch({
+      type: CLEAR_OVERRIDES,
+
+      payload: {
+        attribute: "whitelist",
+      },
     }),
 });
 

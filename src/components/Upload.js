@@ -7,6 +7,10 @@ import { createUseStyles } from "react-jss";
 import sample from "../utils/sample.json";
 
 const useStyles = createUseStyles({
+  paneContainer: {
+    padding: "10px",
+    paddingTop: "40px",
+  },
   dropzoneContainer: {
     display: "flex",
     justifyContent: "center",
@@ -14,6 +18,28 @@ const useStyles = createUseStyles({
     "& label:hover": {
       cursor: "pointer",
       backgroundColor: "#ccc",
+    },
+  },
+  titleContainer: {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "40px",
+    display: "flex",
+    flexWrap: "noWrap",
+    justifyContent: "space-between",
+    alignItems: "center",
+    "& > .title": {
+      width: "100%",
+      height: "40px",
+      "& > h2": {
+        margin: "10px",
+      },
+    },
+    "& :hover": {
+      cursor: "pointer",
+      backgroundColor: "#EEE",
     },
   },
   dropzone: {
@@ -35,16 +61,13 @@ const useStyles = createUseStyles({
       margin: "3px !important",
     },
   },
-  uploadContainer: {
-    padding: "10px",
-  },
   optionsContainer: {
     display: "flex",
     justifyContent: "center",
   },
   options: {
     width: "100%",
-    maxWidth: "200px",
+    maxWidth: "250px",
   },
   option: {
     display: "flex",
@@ -143,8 +166,12 @@ const Upload = (props) => {
   };
 
   return (
-    <div className={classes.uploadContainer}>
-      <h2>Upload</h2>
+    <div className={classes.paneContainer}>
+      <div className={classes.titleContainer} onClick={props.setClose}>
+        <div className="title">
+          <h2>Upload</h2>
+        </div>
+      </div>
       <div className={classes.dropzoneContainer}>
         {uploads.length === 0 && (
           <div style={{ maxWidth: "130px" }}>

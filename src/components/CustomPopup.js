@@ -12,19 +12,32 @@ const useStyles = makeStyles({
 });
 
 const CustomPopup = (props) => {
+  const {
+    type,
+    admin_code,
+    name,
+    mentions,
+    totalMentions,
+    literals,
+    population,
+    latitude,
+    longitude,
+    country_code,
+  } = props.data;
   const classes = useStyles();
+
+  const code =
+    type === "city"
+      ? `, ${country_code === "US" ? admin_code : country_code}`
+      : "";
 
   return (
     <div className={classes.card}>
-      <h2>
-        {props.data.name +
-          (props.data.type === "city" ? `, ${props.data.admin_code}` : "")}
-      </h2>
+      <h2>{name + code}</h2>
       <p>
         {" "}
-        Number of mentions: {props.data.mentions} (
-        {((100 * props.data.mentions) / props.data.totalMentions).toFixed(1)}%
-        of all)
+        Number of mentions: {mentions} (
+        {((100 * mentions) / totalMentions).toFixed(1)}% of all)
       </p>
       <p> Name used: </p>
       <div
@@ -35,26 +48,23 @@ const CustomPopup = (props) => {
         }}
       >
         <ul>
-          {Object.keys(props.data.literals)
-            .sort(
-              (a, b) =>
-                props.data.literals[b].count - props.data.literals[a].count,
-            )
+          {Object.keys(literals)
+            .sort((a, b) => literals[b].count - literals[a].count)
             .map((l) => (
               <li key={l}>
-                {l} ({props.data.literals[l].count} times)
+                {l} ({literals[l].count} times)
               </li>
             ))}
         </ul>
       </div>
 
-      {props.data.population && <p> Population: {props.data.population}</p>}
+      {population && <p> Population: {population}</p>}
       <p>
-        Lat/lng: {props.data.latitude}/{props.data.longitude}
+        Lat/lng: {latitude}/{longitude}
       </p>
-      {props.data.population && <p> Population: {props.data.population}</p>}
-      {props.data.admin_code && <p> State/province: {props.data.admin_code}</p>}
-      <p>Country: {props.data.country_code}</p>
+      {population && <p> Population: {population}</p>}
+      {admin_code && <p> State/province: {admin_code}</p>}
+      <p>Country: {country_code}</p>
     </div>
   );
 };

@@ -5,60 +5,7 @@ import {
   ADD_DOCUMENT,
 } from "../modules/actions";
 
-import geonames from "../utils/geonames";
-import prefixes from "../utils/prefixes";
-
 var Tesseract = window.Tesseract;
-
-function geocodeText(text) {
-  // first take out punctuation and lower, get all the individual words
-  let words = text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "")
-    .split(/\s/);
-
-  let matches = [];
-
-  for (let i = 0; i < words.length; i++) {
-    const w = words[i];
-    let match = null;
-
-    // check for a single word match
-    if (geonames.hasOwnProperty(w)) {
-      match = w;
-    }
-
-    if (prefixes.hasOwnProperty(w)) {
-      // if it is, check for each of those names in the succeeding string
-      // and pick with the longest one
-
-      let endWordInd = Math.min(
-        words.length,
-        i + Math.max(...prefixes[w].map((name) => name.split(/\s/).length)),
-      );
-
-      let succString = words.slice(i, endWordInd).join(" ");
-
-      let possibleMatches = prefixes[w].filter(
-        (m) => succString.indexOf(m) === 0,
-      );
-
-      if (possibleMatches.length > 0) {
-        match = possibleMatches.sort(function (a, b) {
-          return b.length - a.length;
-        })[0];
-      }
-    }
-
-    // convert into its id
-
-    if (match !== null) {
-      matches.push({ key: geonames[match], literal: match });
-    }
-  }
-
-  return matches;
-}
 
 function* load_image(u) {
   const img = new Image();
@@ -153,8 +100,6 @@ function* runImage(u, lang, year) {
   });
 
   for (let j = 0; j < img.height; j += verticalSliceHeight) {
-    console.log(`reading y slice [${j}, ${j + verticalSliceHeight}]`);
-
     const resized = yield process_image_subset({
       imgBlob: u.file,
       yRange: [j, j + verticalSliceHeight],
@@ -172,7 +117,7 @@ function* runImage(u, lang, year) {
         text: result.text,
         confidence: result.confidence,
         language: lang,
-        geonames: geocodeText(result.text),
+        geonames: [],
         loading: j + verticalSliceHeight < img.height,
         percentLoaded: (j + verticalSliceHeight) / parseFloat(img.height),
       },
@@ -197,12 +142,9 @@ function* readText(u) {
 }
 
 function* analyzeFiles(action) {
-  console.log("action dispatched to saga", action);
   const { uploads } = action.payload;
 
   for (let i = 0; i < uploads.length; i++) {
-    console.log(`reading file ${i + 1}/${uploads.length}`);
-
     const el = uploads[i];
     let type = el.file.type.substring(0, el.file.type.indexOf("/"));
 
@@ -231,7 +173,7 @@ function* analyzeFiles(action) {
           text: text,
           confidence: 100,
           language: action.lang,
-          geonames: geocodeText(text),
+          geonames: [],
           loading: false,
         },
       });

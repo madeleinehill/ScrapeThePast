@@ -2,68 +2,78 @@ import { createSelector } from "reselect";
 import geonames from "../utils/geonames";
 import geoData from "../utils/geo_data";
 import abbreviations from "../utils/abbreviations";
+import country_abbreviations from "../utils/country_abbreviations";
 
 const getDocuments = (state) => state.documents;
-const getFilterFunction = (state) => state.filterFunction;
-const getBlackList = (state) => state.blacklist;
-const getSubstitutions = (state) => state.substitutions;
+const getOverrides = (state) => state.overrides;
 const getMapControls = (state) => state.mapControls;
 
 export const getFilteredMentions = createSelector(
-  [
-    getDocuments,
-    getFilterFunction,
-    getBlackList,
-    getSubstitutions,
-    getMapControls,
-  ],
-  (documents, filterFunction, blacklist, substitutions, mapControls) => {
+  [getDocuments, getOverrides, getMapControls],
+  (documents, overrides, mapControls) => {
+    const { filterFunction } = mapControls;
+    const { blacklist } = overrides;
     let mentions = {};
     Object.values(documents).forEach((doc) => {
       if (!filterFunction(doc.year) || doc.excluded) {
         return;
       }
-      let filteredNames = doc.geonames
-        // apply any substitutions
-        .map((n) =>
-          substitutions.hasOwnProperty(n.literal)
-            ? { key: geonames[substitutions[n.literal]], literal: n.literal }
-            : n,
-        )
-        // filter based on blacklist
-        .filter((n) => !blacklist.hasOwnProperty(n.literal));
+      // filter based on blacklist
+      let filteredNames = doc.geonames.filter(
+        (n) => !blacklist.hasOwnProperty(n.literal),
+      );
 
       // group by state, if applicable
       if (mapControls.groupByState) {
         filteredNames = filteredNames.map((n) =>
           geoData[n.key].type === "city"
-            ? { key: geonames[keyToState(n.key)], literal: n.literal }
+            ? {
+                key:
+                  geonames[
+                    geoData[n.key].country_code === "US"
+                      ? keyToState(n.key)
+                      : keyToCountry(n.key)
+                  ],
+                literal: n.literal,
+              }
             : n,
         );
       }
 
       mentions = addMentions(mentions, filteredNames);
     });
-    return mentions;
-  },
-);
 
-export const getTotalMentions = createSelector(
-  [getDocuments, getFilterFunction, getBlackList],
-  (documents, filterFunction, blacklist) => {
-    let total = 0;
-    Object.values(documents).forEach((doc) => {
-      if (!filterFunction(doc.year) || doc.excluded) {
-        return;
-      }
-      total += doc.geonames.filter((n) => !blacklist.hasOwnProperty(n)).length;
+    // compute the total number of mentions
+    const totalMentions = Object.values(mentions).reduce((count, m) => {
+      return count + m.count;
+    }, 0);
+
+    // determine which names are below frequency and population thresholds and remove them;
+    const belowThreshold = Object.keys(mentions).filter(
+      (m) =>
+        geoData[m] === undefined ||
+        (mentions[m].count * 100) / totalMentions < mapControls.threshold ||
+        (parseInt(geoData[m].population) &&
+          parseInt(geoData[m].population) < mapControls.popThreshold),
+    );
+    belowThreshold.forEach((key) => {
+      delete mentions[key];
     });
-    return total;
+
+    return { mentions: mentions, totalMentions: totalMentions };
   },
 );
 
 const keyToState = (key) =>
   abbreviations[geoData[key].admin_code].toLowerCase();
+
+const keyToCountry = (key) => {
+  console.log(
+    country_abbreviations[geoData[key].country_code],
+    geoData[key].country_code,
+  );
+  return country_abbreviations[geoData[key].country_code].toLowerCase();
+};
 
 const addMentions = (mentions, geonames) => {
   geonames.forEach((n) => {

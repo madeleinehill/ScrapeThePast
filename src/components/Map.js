@@ -57,7 +57,7 @@ const MapWrapper = (props) => {
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}"
           attribution="Tiles &copy; Esri &mdash; Source: US National Park Service"
-          minZoom={4}
+          minZoom={2}
           maxZoom={10}
         />
         {/* {mapObjects.map((obs) => (
@@ -70,30 +70,31 @@ const MapWrapper = (props) => {
         )) */}}
         {Object.keys(props.mentions).map((obs, i) => {
           return (
-            (100 * props.mentions[obs].count) / props.totalMentions >=
-              props.threshold && (
-              <Circle
-                key={obs}
-                center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
-                radius={
-                  props.scaleMarkers * calulateSize(props.mentions[obs].count)
-                }
-                color={geoData[obs].type === "state" ? "#F57" : "#57F"}
-              >
-                <Popup>
-                  <CustomPopup
-                    data={{
-                      mentions: props.mentions[obs].count,
-                      literals: props.mentions[obs].literals,
-                      ...geoData[obs],
-                      totalMentions: props.totalMentions,
-                    }}
-                  />
-                </Popup>
-                {/* title={obs.name} description={obs.description} */}
-                {/* </Popup> */}
-              </Circle>
-            )
+            <Circle
+              key={obs}
+              center={[geoData[obs]["latitude"], geoData[obs]["longitude"]]}
+              radius={
+                props.scaleMarkers * calulateSize(props.mentions[obs].count)
+              }
+              color={
+                geoData[obs].type === "state" || geoData[obs].type === "country"
+                  ? "#F57"
+                  : "#57F"
+              }
+            >
+              <Popup>
+                <CustomPopup
+                  data={{
+                    mentions: props.mentions[obs].count,
+                    literals: props.mentions[obs].literals,
+                    ...geoData[obs],
+                    totalMentions: props.totalMentions,
+                  }}
+                />
+              </Popup>
+              {/* title={obs.name} description={obs.description} */}
+              {/* </Popup> */}
+            </Circle>
           );
         })}
       </Map>
@@ -101,14 +102,16 @@ const MapWrapper = (props) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  documents: state.documents,
-  mentions: getFilteredMentions(state),
-  totalMentions: getTotalMentions(state),
-  relativeSizing: state.mapControls.relativeSizing,
-  scaleMarkers: state.mapControls.scaleMarkers,
-  threshold: state.mapControls.threshold,
-});
+const mapStateToProps = (state) => {
+  const { mentions, totalMentions } = getFilteredMentions(state);
+  return {
+    documents: state.documents,
+    mentions: mentions,
+    totalMentions: totalMentions,
+    relativeSizing: state.mapControls.relativeSizing,
+    scaleMarkers: state.mapControls.scaleMarkers,
+  };
+};
 
 const mapDispatchToProps = (dispatch) => ({});
 
