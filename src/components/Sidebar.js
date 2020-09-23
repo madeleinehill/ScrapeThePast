@@ -60,8 +60,15 @@ const Sidebar = (props) => {
           fontSize: "10px",
         }}
       >
-        This website was created by Henry Hill. <br></br>You can find the source
-        on Github{" "}
+        This website was created by{" "}
+        <a
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://www.henryjhill.com/projects"
+        >
+          Henry Hill
+        </a>
+        . <br></br>You can find the source on Github{" "}
         <a
           target="_blank"
           rel="noopener noreferrer"
