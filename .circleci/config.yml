@@ -1,10 +1,42 @@
-orbs:
-  react: thefrontside/react@0.2.0
-version: 2.1
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:12
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+            - v1-dependencies-
+
+      - run: npm install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Deploy Over SSH
+          command: |
+            scp -r ./build/* $SSH_USER@$SSH_TARGET
+
 workflows:
-  push:
+  version: 2
+  build-and-deploy:
     jobs:
-      - react/install
-      - react/eslint:
+      - build
+      - deploy:
           requires:
-            - react/install
+            - build # only deploy once build job has completed
+          filters:
+            branches:
+              only: master
