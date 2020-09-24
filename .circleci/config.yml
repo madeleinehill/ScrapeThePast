@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Deploy Over SSH
           command: |
-            scp -r ./build/* $SSH_USER@$SSH_TARGET
+            scp -r -o ./build/* $SSH_USER@$SSH_TARGET
 
 workflows:
   version: 2
