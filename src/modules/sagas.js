@@ -1,4 +1,4 @@
-import { put, takeLatest, all, select } from "redux-saga/effects";
+import { put, takeLatest, all } from "redux-saga/effects";
 import {
   CREATE_DOCUMENTS,
   UPDATE_DOCUMENT,

@@ -20,7 +20,12 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      - run: npm run build
+      - run:
+          name: "build react app"
+          environment: |
+            CI: false
+          command: |
+            npm run build
 
   deploy:
     machine:
