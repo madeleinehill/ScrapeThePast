@@ -1,10 +1,10 @@
 import React from "react";
-import { Map, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { Map, TileLayer, Popup, Circle } from "react-leaflet";
 import { connect } from "react-redux";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import CustomPopup from "./CustomPopup";
-import { getFilteredMentions, getTotalMentions } from "../modules/selectors";
+import { getFilteredMentions } from "../modules/selectors";
 
 import { createUseStyles } from "react-jss";
 import geoData from "../utils/geo_data";
@@ -30,20 +30,6 @@ const MapWrapper = (props) => {
   console.log(props.totalMentions);
   const classes = useStyles(props);
 
-  //   const mapObjects: MapObject[] = useSelector((state) =>
-  //     Object.values({
-  //       ...state.observations.events,
-  //       ...state.observations.documents,
-  //     }).filter(
-  //       obj => globalTime >= obj.dateRange[0] && globalTime <= obj.dateRange[1],
-  //     ),
-  //   );
-
-  const mapObjects = [
-    { uuid: "1", coord: [44, -90] },
-    { uuid: "2", coord: [45, -90] },
-  ];
-
   const calulateSize = (count) => {
     return props.relativeSizing
       ? 500000 * Math.sqrt(count / props.totalMentions)
@@ -60,14 +46,6 @@ const MapWrapper = (props) => {
           minZoom={2}
           maxZoom={10}
         />
-        {/* {mapObjects.map((obs) => (
-          <Marker key={obs.uuid} position={obs.coord}>
-            {/* <Popup>*/}
-        {/* <CustomPopup /> */}
-        {/* title={obs.name} description={obs.description} */}
-        {/* </Popup> */}
-        {/*</Marker>
-        )) */}}
         {Object.keys(props.mentions).map((obs, i) => {
           return (
             <Circle
@@ -92,8 +70,6 @@ const MapWrapper = (props) => {
                   }}
                 />
               </Popup>
-              {/* title={obs.name} description={obs.description} */}
-              {/* </Popup> */}
             </Circle>
           );
         })}

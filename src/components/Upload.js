@@ -146,7 +146,7 @@ const Upload = (props) => {
 
   const [uploads, setUploads] = useState([]);
   const [year, setYear] = useState("");
-  const [lang, setLang] = useState("eng");
+  const [lang] = useState("eng");
 
   const loadSample = () => {
     setUploads(

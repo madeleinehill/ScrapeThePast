@@ -61,7 +61,7 @@ function* process_image_subset({ imgBlob, xRange, yRange }) {
 }
 
 // adapted from https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
-function downloadFile(file, filename = "download") {
+export function downloadFile(file, filename = "download") {
   if (window.navigator.msSaveOrOpenBlob)
     // IE10+
     window.navigator.msSaveOrOpenBlob(file, filename);
