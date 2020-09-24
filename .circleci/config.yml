@@ -22,7 +22,7 @@ jobs:
 
       - run:
           name: "build react app"
-          environment: |
+          environment:
             CI: false
           command: |
             npm run build
