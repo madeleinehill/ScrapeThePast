@@ -27,6 +27,7 @@ jobs:
             scp -r -o StrictHostKeyChecking=no /build/* $SSH_USER@$SSH_TARGET
 
 workflows:
+  version: 2
   build-and-deploy:
     jobs:
       - build
