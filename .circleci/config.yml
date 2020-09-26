@@ -25,9 +25,18 @@ jobs:
           command: |
             npm run build
 
+      - save_cache:
+          key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - .next
+
   deploy:
+    docker:
+      - image: circleci/node:12
+
     machine:
       enabled: true
+
     steps:
       - add_ssh_keys:
           fingerprints:
