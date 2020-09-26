@@ -34,9 +34,6 @@ jobs:
     docker:
       - image: circleci/node:12
 
-    machine:
-      enabled: true
-
     steps:
       - restore_cache:
           keys:
