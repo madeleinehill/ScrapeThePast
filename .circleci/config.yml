@@ -15,11 +15,13 @@ jobs:
 
       - add_ssh_keys:
           fingerprints:
-            - "e8:fd:62:98:ce:ed:7e:af:c0:23:38:ba:b0:e8:78:55"
+            - "30:78:d8:8c:f3:19:bd:95:b9:5c:6c:15:44:a9:42:a8"
+      - run: pwd
+      - run: ls
       - run:
           name: Deploy Over SSH
           command: |
-            scp -r -o StrictHostKeyChecking=no ~/repo/build/* $SSH_USER@$SSH_TARGET
+            scp -r -o StrictHostKeyChecking=no /home/circleci/project/build/* $SSH_USER@$SSH_TARGET
 
 workflows:
   version: 2
