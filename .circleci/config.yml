@@ -26,6 +26,11 @@ jobs:
             npm run build
 
       - save_cache:
+          paths:
+            - build
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - save_cache:
           key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - .next
