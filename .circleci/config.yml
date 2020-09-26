@@ -4,45 +4,15 @@ jobs:
     docker:
       - image: circleci/node:12
 
-    working_directory: ~/repo
-
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            - v1-dependencies-
 
       - run: npm install
-
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
       - run:
           name: "build react app"
           command: |
             npm run build
 
-      - save_cache:
-          paths:
-            - build
-          key: v1-dependencies-{{ checksum "package.json" }}
-
-      - save_cache:
-          key: v1-build-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - .next
-
-  deploy:
-    docker:
-      - image: circleci/node:12
-
-    steps:
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
       - add_ssh_keys:
           fingerprints:
             - "e8:fd:62:98:ce:ed:7e:af:c0:23:38:ba:b0:e8:78:55"
@@ -56,9 +26,3 @@ workflows:
   build-and-deploy:
     jobs:
       - build
-      - deploy:
-          requires:
-            - build # only deploy once build job has completed
-          filters:
-            branches:
-              only: master
