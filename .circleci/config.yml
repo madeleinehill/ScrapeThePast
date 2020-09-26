@@ -12,12 +12,14 @@ jobs:
           name: "build react app"
           command: |
             npm run build
+  deploy:
+    docker:
+      - image: circleci/node:12
 
+    steps:
       - add_ssh_keys:
           fingerprints:
             - "30:78:d8:8c:f3:19:bd:95:b9:5c:6c:15:44:a9:42:a8"
-      - run: pwd
-      - run: ls
       - run:
           name: Deploy Over SSH
           command: |
@@ -28,3 +30,4 @@ workflows:
   build-and-deploy:
     jobs:
       - build
+      - deploy
