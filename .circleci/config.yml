@@ -6,7 +6,10 @@ jobs:
 
     steps:
       - checkout
-
+      - run: pwd
+      - run: ls
+      - run: ls ./src
+      - run: ls ~/src
       - run: npm install
       - run:
           name: "build react app"
@@ -19,7 +22,7 @@ jobs:
       - run:
           name: Deploy Over SSH
           command: |
-            scp -v -r -o StrictHostKeyChecking=no /build/* $SSH_USER@$SSH_TARGET
+            scp -v -r -o StrictHostKeyChecking=no ~/build/* $SSH_USER@$SSH_TARGET
 
 workflows:
   version: 2
