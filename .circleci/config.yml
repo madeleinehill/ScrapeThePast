@@ -1,5 +1,4 @@
 version: 2
-
 jobs:
   build:
     docker:
@@ -13,27 +12,17 @@ jobs:
           name: "build react app"
           command: |
             npm run build
-  deploy:
-    docker:
-      - image: circleci/node:12
 
-    steps:
       - add_ssh_keys:
           fingerprints:
             - "30:78:d8:8c:f3:19:bd:95:b9:5c:6c:15:44:a9:42:a8"
       - run:
           name: Deploy Over SSH
           command: |
-            scp -r -o StrictHostKeyChecking=no /build/* $SSH_USER@$SSH_TARGET
+            scp -v -r -o StrictHostKeyChecking=no /build/* $SSH_USER@$SSH_TARGET
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - build
-      - deploy:
-        requires:
-          - build
-        filters:
-          branches:
-            only: master
