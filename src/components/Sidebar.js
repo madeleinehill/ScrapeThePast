@@ -60,19 +60,12 @@ const Sidebar = (props) => {
           fontSize: "10px",
         }}
       >
-        This website was created by{" "}
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href="https://www.henryjhill.com/projects"
-        >
-          Henry Hill
-        </a>
+        This website was created by Madeleine Hill
         . <br></br>You can find the source on Github{" "}
         <a
           target="_blank"
           rel="noopener noreferrer"
-          href="https://github.com/henryhill1999/ScrapeThePast"
+          href="https://github.com/madeleinehill/ScrapeThePast"
         >
           here
         </a>
